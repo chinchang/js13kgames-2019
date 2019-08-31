@@ -44,8 +44,9 @@
       .container {
         transform: rotateX(60deg) rotateY(0deg) rotateZ(-45deg);
         position: relative;
-        left: calc(var(--unit) * -0.2 * 6);
-        top: var(--unit);
+        left: calc(var(--unit) * 6 * 0.2);
+        width: calc(var(--unit) * 6);
+        transform-origin: center center;
       }
       .tile {
         font-size: calc(var(--unit) * 0.7);
@@ -58,7 +59,7 @@
         /*   box-shadow:  */
         border-left: var(--border-width) solid rgba(0, 0, 0, 0.5);
         border-bottom: var(--border-width) solid rgba(0, 0, 0, 0.3);
-        transition: 0.3s cubic-bezier(0.77, -0.05, 0.41, 1.11);
+        transition: 0.3s ease;
       }
 
       .tile:not(.hole):not(.cover):hover,
@@ -92,6 +93,27 @@
         outline-width: 8px;
         outline-style: solid;
         outline-color: black;
+      }
+      .overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0) 50%,
+          rgba(0, 0, 0, 0.2) 70%,
+          rgba(0, 0, 0, 0.4)
+        );
+        background-size: 5px 5px;
+        pointer-events: none;
+        position: fixed;
+        z-index: 3;
+        left: -50vw;
+        right: -50vw;
+        top: -50vw;
+        bottom: -50vw;
+      }
+      [data-screen="game"] {
+        display: flex;
+        justify-content: center;
       }
     </style>
   </head>
@@ -135,6 +157,8 @@
     <div class="screen" data-screen="game">
       <div id="container" class="container"></div>
     </div>
+
+    <div class="overlay"></div>
 
     <script>
       let cellSize = parseInt(
