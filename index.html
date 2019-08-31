@@ -11,6 +11,7 @@
         box-sizing: border-box;
       }
       body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         font-size: 200%;
         overflow: hidden;
         margin: 0;
@@ -56,7 +57,6 @@
         height: var(--unit);
         position: absolute;
         background: greenyellow;
-        /*   box-shadow:  */
         border-left: var(--border-width) solid rgba(0, 0, 0, 0.5);
         border-bottom: var(--border-width) solid rgba(0, 0, 0, 0.3);
         transition: 0.3s ease;
@@ -106,10 +106,11 @@
         pointer-events: none;
         position: fixed;
         z-index: 3;
-        left: -50vw;
-        right: -50vw;
-        top: -50vw;
-        bottom: -50vw;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        opacity: 0.6;
       }
       [data-screen="game"] {
         display: flex;
@@ -307,6 +308,67 @@
               alert(`YOU WONN! in ${time} seconds`);
             }, 1000);
           }
+        }
+      };
+
+      function navigate(el, dir) {
+        function getVerticalEl(el, x, y) {
+          return el.parentElement.children[y * n + x];
+        }
+
+        if (dir === "right" || dir === "left") {
+          let nextEl = el;
+          const fnName =
+            dir === "right" ? "nextElementSibling" : "previousElementSibling";
+          while (
+            (nextEl = nextEl[fnName]
+              ? nextEl[fnName]
+              : el.parentElement.children[dir === "right" ? 0 : n * n - 1])
+          ) {
+            if (
+              !nextEl.classList.contains("hole") &&
+              !nextEl.className.match(/cover/)
+            ) {
+              break;
+            }
+          }
+          nextEl.focus();
+        } else if (dir === "up" || dir === "down") {
+          let nextEl = el;
+          const diff = dir === "down" ? 1 : -1;
+          while (
+            (nextEl =
+              nextEl.posY + diff < n && nextEl.posY + diff >= 0
+                ? getVerticalEl(nextEl, nextEl.posX, nextEl.posY + diff)
+                : getVerticalEl(
+                    nextEl,
+                    nextEl.posX,
+                    dir === "down" ? 0 : n - 1
+                  ))
+          ) {
+            if (
+              !nextEl.classList.contains("hole") &&
+              !nextEl.className.match(/cover/)
+            ) {
+              break;
+            }
+          }
+          nextEl.focus();
+        }
+      }
+
+      window.onkeyup = e => {
+        console.log(e.key);
+        console.log(e.target);
+        const target = e.target;
+        if (e.key === "ArrowRight") {
+          navigate(e.target, "right");
+        } else if (e.key === "ArrowLeft") {
+          navigate(e.target, "left");
+        } else if (e.key === "ArrowDown") {
+          navigate(e.target, "down");
+        } else if (e.key === "ArrowUp") {
+          navigate(e.target, "up");
         }
       };
     </script>
