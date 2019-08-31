@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style id="webmakerstyle">
+      :root {
+        --unit: 100px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-size: 200%;
+        overflow: hidden;
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(
+          180deg,
+          skyblue 0%,
+          skyblue 82%,
+          white 100%
+        );
+        text-align: center;
+      }
+      .screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        visibility: hidden;
+      }
+      .screen.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+      .btn {
+        font-family: inherit;
+        font-size: inherit;
+        padding: 1rem 2rem;
+      }
+      .container {
+        transform: rotateX(60deg) rotateY(0deg) rotateZ(-45deg);
+        position: relative;
+        left: calc(var(--unit) * -0.2 * 6);
+        top: var(--unit);
+      }
+      .tile {
+        font-size: calc(var(--unit) * 0.7);
+        text-align: center;
+        --border-width: 8px;
+        width: var(--unit);
+        height: var(--unit);
+        position: absolute;
+        background: greenyellow;
+        /*   box-shadow:  */
+        border-left: var(--border-width) solid rgba(0, 0, 0, 0.5);
+        border-bottom: var(--border-width) solid rgba(0, 0, 0, 0.3);
+        transition: 0.3s cubic-bezier(0.77, -0.05, 0.41, 1.11);
+      }
+
+      .tile:not(.hole):not(.cover):hover,
+      .tile:not(.hole):not(.cover):focus {
+        margin-left: 10px;
+        margin-top: -10px;
+        z-index: 10;
+        box-shadow: 5px -5px 20px 2px rgba(0, 0, 0, 0.35);
+      }
+      .hill {
+        border-left: 10px solid rgba(0, 0, 0, 0.5);
+        border-bottom: 10px solid rgba(0, 0, 0, 0.3);
+      }
+      .hole {
+        background: crimson;
+        border-left: 0;
+        border-bottom: 0;
+        border-right: 40px solid rgba(0, 0, 0, 0.5);
+        border-top: 40px solid rgba(0, 0, 0, 0.3);
+      }
+      .cover {
+        background: skyblue;
+        border: 0;
+      }
+      .hole:after {
+        content: "💣";
+        display: block;
+        margin: -0.2em 0 0 0.1em;
+      }
+      .tile:focus {
+        outline-width: 8px;
+        outline-style: solid;
+        outline-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen visible" data-screen="menu">
+      <h1>
+        Minesweeper "Back"wards
+      </h1>
+
+      <div class="d-f">
+        <button
+          class="btn"
+          type="button"
+          data-level="0"
+          onclick="startGame(event)"
+        >
+          Easy
+        </button>
+        <button
+          class="btn"
+          type="button"
+          data-level="1"
+          onclick="startGame(event)"
+        >
+          Medium
+        </button>
+        <button
+          class="btn"
+          type="button"
+          data-level="2"
+          onclick="startGame(event)"
+        >
+          Hard
+        </button>
+      </div>
+    </div>
+    <div class="screen" data-screen="help">
+      <h2>Help</h2>
+      <p>Hahahaha</p>
+    </div>
+    <div class="screen" data-screen="game">
+      <div id="container" class="container"></div>
+    </div>
+
+    <script>
+      let cellSize = parseInt(
+        window
+          .getComputedStyle(document.documentElement)
+          .getPropertyValue("--unit")
+      );
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      let grid = [];
+      let input = [];
+      let n = 6;
+      const levels = {
+        0: { n: 3, mines: 2 },
+        1: { n: 6, mines: 8 },
+        2: { n: 12, mines: 20 }
+      };
+      const screens = [...document.querySelectorAll(".screen")];
+
+      function random(a, b) {
+        return a + ~~(Math.random() * (b - a));
+      }
+      function changeScreen(name) {
+        screens.forEach(screen => screen.classList.remove("visible"));
+        document
+          .querySelector(`[data-screen="${name}"]`)
+          .classList.add("visible");
+      }
+
+      function logField(arr) {
+        console.log("Field:");
+        for (let y = 0; y < n; y++) {
+          console.log(arr[y]);
+          console.log("---");
+        }
+      }
+
+      function makeTile({ isHole, isFake }) {
+        // const isHole = hole || Math.random() > 0.7;
+        const t = document.createElement(isFake || isHole ? "div" : "button");
+        t.classList.add("tile");
+        if (isHole) {
+          t.classList.add("hole");
+          t.tileType = "hole";
+        }
+        return t;
+      }
+      function gen(level) {
+        n = levels[level].n;
+        const numMines = levels[level].mines;
+        cellSize = ~~((Math.min(W, H) * 0.85) / n);
+        document.documentElement.style.setProperty("--unit", `${cellSize}px`);
+        let minesPos = [];
+        while (minesPos.length < numMines) {
+          let cellIndex = random(0, n * n);
+          if (!minesPos.includes(cellIndex)) {
+            minesPos.push(cellIndex);
+          }
+        }
+        minesPos = minesPos.map(pos => {
+          return { y: ~~(pos / n), x: pos % n };
+        });
+
+        Array.from(window.container.children).map(i => i.remove());
+        grid = [];
+        for (var i = 0; i < n; i++) {
+          grid[i] = [];
+          input[i] = [];
+          for (var j = 0; j < n; j++) {
+            grid[i][j] = 0;
+            input[i][j] = 0;
+          }
+        }
+        for (var j = 0; j < n + 1; j++)
+          for (var i = 0; i < n; i++) {
+            const t = makeTile({
+              isHole: minesPos.some(pos => pos.x === i && pos.y === j),
+              isFake: j === n
+            });
+            t.style.top = `${j * cellSize}px`;
+            t.style.left = `${i * cellSize}px`;
+            t.count = 0;
+            t.posX = i;
+            t.posY = j;
+            if (j === n) {
+              t.setAttribute("class", "tile cover");
+            } else {
+              if (t.tileType === "hole") {
+                grid[i][j] = -1;
+                // iterate around the current cell (i,j)
+                for (let x = -1; x <= 1; x++)
+                  for (let y = -1; y <= 1; y++) {
+                    if (
+                      (x === 0 && y === 0) ||
+                      i + x < 0 ||
+                      j + y < 0 ||
+                      i + x > n - 1 ||
+                      j + y > n - 1 ||
+                      grid[i + x][j + y] === -1
+                    )
+                      continue;
+                    grid[i + x][j + y] = grid[i + x][j + y] + 1;
+                  }
+              }
+            }
+            window.container.append(t);
+          }
+        // logField(grid);
+      }
+
+      function checkWin() {
+        for (var i = 0; i < n; i++) {
+          for (var j = 0; j < n + 1; j++) {
+            if (grid[i][j] === -1) continue;
+
+            if (grid[i][j] !== input[i][j]) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function startGame(e) {
+        const level = parseInt(e.target.dataset.level, 10);
+        gen(level);
+        startTime = Date.now();
+        changeScreen("game");
+      }
+
+      window.onclick = e => {
+        if (!grid.length) {
+          return;
+        }
+        const el = e.target;
+        if (el.classList.contains("tile") && el.tagName === "BUTTON") {
+          input[el.posX][el.posY]++;
+          input[el.posX][el.posY] %= 9;
+          el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
+            input[el.posX][el.posY] - 1
+          ];
+
+          if (checkWin()) {
+            const time = (Date.now() - startTime) / 1000;
+            setTimeout(() => {
+              alert(`YOU WONN! in ${time} seconds`);
+            }, 1000);
+          }
+        }
+      };
+    </script>
+  </body>
+</html>
