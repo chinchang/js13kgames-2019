@@ -74,11 +74,12 @@
         border-bottom: 10px solid rgba(0, 0, 0, 0.3);
       }
       .hole {
+        --hole-width: 0.5em;
         background: crimson;
         border-left: 0;
         border-bottom: 0;
-        border-right: 40px solid rgba(0, 0, 0, 0.5);
-        border-top: 40px solid rgba(0, 0, 0, 0.3);
+        border-right: var(--hole-width) solid rgba(0, 0, 0, 0.5);
+        border-top: var(--hole-width) solid rgba(0, 0, 0, 0.3);
       }
       .cover {
         background: skyblue;
@@ -156,7 +157,7 @@
       <p>Hahahaha</p>
     </div>
     <div class="screen" data-screen="game">
-      <div id="container" class="container"></div>
+      <div id="tileContainer" class="container"></div>
     </div>
 
     <div class="overlay"></div>
@@ -210,8 +211,10 @@
       function gen(level) {
         n = levels[level].n;
         const numMines = levels[level].mines;
-        cellSize = ~~((Math.min(W, H) * 0.85) / n);
+        cellSize = ~~((Math.min(W, H) * 0.8) / n);
         document.documentElement.style.setProperty("--unit", `${cellSize}px`);
+        tileContainer.style.left = `${cellSize * n * 0.15}px`;
+        tileContainer.style.width = `${cellSize * n}px`;
         let minesPos = [];
         while (minesPos.length < numMines) {
           let cellIndex = random(0, n * n);
@@ -223,7 +226,7 @@
           return { y: ~~(pos / n), x: pos % n };
         });
 
-        Array.from(window.container.children).map(i => i.remove());
+        Array.from(tileContainer.children).map(i => i.remove());
         grid = [];
         for (var i = 0; i < n; i++) {
           grid[i] = [];
@@ -265,7 +268,7 @@
                   }
               }
             }
-            window.container.append(t);
+            tileContainer.append(t);
           }
         // logField(grid);
       }
@@ -290,17 +293,21 @@
         changeScreen("game");
       }
 
+      function setTileValue(el, value) {
+        input[el.posX][el.posY] =
+          value !== undefined ? value : input[el.posX][el.posY] + 1;
+        input[el.posX][el.posY] %= 9;
+        el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
+          input[el.posX][el.posY] - 1
+        ];
+      }
       window.onclick = e => {
         if (!grid.length) {
           return;
         }
         const el = e.target;
-        if (el.classList.contains("tile") && el.tagName === "BUTTON") {
-          input[el.posX][el.posY]++;
-          input[el.posX][el.posY] %= 9;
-          el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
-            input[el.posX][el.posY] - 1
-          ];
+        if (el.className.match(/tile/) && el.tagName === "BUTTON") {
+          setTileValue(el);
 
           if (checkWin()) {
             const time = (Date.now() - startTime) / 1000;
@@ -358,9 +365,22 @@
       }
 
       window.onkeyup = e => {
-        console.log(e.key);
-        console.log(e.target);
+        // console.log(e.key);
         const target = e.target;
+
+        if (!target.className.match(/tile/)) {
+          if (
+            ["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(e.key)
+          ) {
+            tileContainer.querySelector(".tile:not(.cover):not(.hole)").focus();
+          }
+        }
+
+        let num = parseInt(e.key, 10);
+        if (!isNaN(num)) {
+          setTileValue(target, num);
+        }
+
         if (e.key === "ArrowRight") {
           navigate(e.target, "right");
         } else if (e.key === "ArrowLeft") {
