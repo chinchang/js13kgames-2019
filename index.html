@@ -29,6 +29,7 @@
           white 100%
         );
         text-align: center;
+        position: relative;
       }
       .screen {
         position: absolute;
@@ -73,12 +74,18 @@
         width: var(--unit);
         height: var(--unit);
         position: absolute;
-        background: greenyellow;
+        background: #8ba069;
         border-left: var(--border-width) solid rgba(0, 0, 0, 0.5);
         border-bottom: var(--border-width) solid rgba(0, 0, 0, 0.3);
+        color: rgb(65, 78, 45);
+
         transition: 0.25s ease;
       }
 
+      .tile:not(.hole):not(.cover) {
+        text-shadow: 7px -4px 0px rgba(0, 0, 0, 0.5),
+          6px -4px 0px rgba(0, 0, 0, 0.6), 0px -4px 0px rgba(255, 255, 255, 0.6);
+      }
       .tile:not(.hole):not(.cover):hover,
       .tile:not(.hole):not(.cover):focus {
         margin-left: 10px;
@@ -90,7 +97,34 @@
         border-left: 10px solid rgba(0, 0, 0, 0.5);
         border-bottom: 10px solid rgba(0, 0, 0, 0.3);
       }
-      .hole {
+      .cover {
+        background: skyblue;
+        border: 0;
+      }
+      /* blast rays */
+      .hole:before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 10px;
+        height: 200vw;
+        bottom: 200vh;
+        background: white;
+        left: 20px;
+        opacity: 0;
+        transition: 0.5s ease;
+      }
+      .bomb-place-anim-1 .hole:before {
+        opacity: 1;
+        bottom: 30px;
+      }
+      .bomb-place-anim-2 .hole:before {
+        height: 10px;
+      }
+      .bomb-place-anim-2 .hole {
+        background: white;
+      }
+      .game-started .hole {
         --hole-width: 0.5em;
         background: crimson;
         border-left: 0;
@@ -98,11 +132,7 @@
         border-right: var(--hole-width) solid rgba(0, 0, 0, 0.5);
         border-top: var(--hole-width) solid rgba(0, 0, 0, 0.3);
       }
-      .cover {
-        background: skyblue;
-        border: 0;
-      }
-      .hole:after {
+      .game-started .hole:after {
         content: "💣";
         display: block;
         margin: -0.2em 0 0 0.1em;
@@ -133,6 +163,8 @@
       [data-screen="game"] {
         display: flex;
         justify-content: center;
+        transform-style: preserve-3d;
+        perspective: 1170px;
       }
       details {
         margin: 2rem;
@@ -143,6 +175,16 @@
       }
       details[open] {
         transform: translateY(-140px);
+      }
+      .message {
+        position: fixed;
+        top: 30vh;
+        left: 0;
+        right: 0;
+        padding: 3rem;
+        background: white;
+        border: 5px solid black;
+        box-shadow: 6px 6px;
       }
     </style>
   </head>
@@ -157,7 +199,7 @@
           class="btn"
           type="button"
           data-level="0"
-          onclick="startGame(event)"
+          onclick="setupGame(event)"
         >
           Easy
         </button>
@@ -165,7 +207,7 @@
           class="btn"
           type="button"
           data-level="1"
-          onclick="startGame(event)"
+          onclick="setupGame(event)"
         >
           Hard
         </button>
@@ -173,7 +215,7 @@
           class="btn"
           type="button"
           data-level="2"
-          onclick="startGame(event)"
+          onclick="setupGame(event)"
         >
           Hard
         </button> -->
@@ -217,11 +259,13 @@
     </div>
     <div class="screen" data-screen="game">
       <div id="tileContainer" class="container"></div>
+      <div id="messageEl" class="message">Click to start</div>
     </div>
 
     <div class="overlay"></div>
 
     <script>
+      const DEBUG = true;
       let cellSize = parseInt(
         window
           .getComputedStyle(document.documentElement)
@@ -306,20 +350,21 @@
             t.count = 0;
             t.posX = i;
             t.posY = j;
-            const offset = random(5, 125);
+            const offset = -10;
             t.style.transform = `translate(${offset}px, -${offset}px)`;
-            t.style.transitionDelay = `${Math.random() * 0.5}s`;
-            t.style.transitionDuration = `${0.3 + Math.random() * 3}s`;
+            t.style.transitionDelay = `${(j * n + i) * 0.02}s`; //`${Math.random() * 0.5}s`;
             t.style.transitionTimingFunction =
               "0.25s cubic-bezier(0, 0.6, 0.6, 1.34)";
             t.style.opacity = 0;
             setTimeout(() => {
               t.style.transform = `translate(0px, 0px)`;
+              t.style.opacity = 1;
+            }, 1);
+            setTimeout(() => {
+              t.style.transitionTimingFunction = null;
               t.style.transitionDelay = null;
               t.style.transitionDuration = null;
-              t.style.transitionTimingFunction = null;
-              t.style.opacity = 1;
-            }, 10);
+            }, 2000);
             if (j === n) {
               t.setAttribute("class", "tile cover");
             } else {
@@ -359,20 +404,46 @@
         return true;
       }
 
-      function startGame(e) {
-        const level = parseInt(e.target.dataset.level, 10);
+      function setupGame(e, level) {
+        if (e) {
+          level = parseInt(e.target.dataset.level, 10);
+        }
         gen(level);
-        startTime = Date.now();
         changeScreen("game");
       }
 
-      function setTileValue(el, value) {
+      function hideMessage() {
+        window.messageEl.style.display = "none";
+      }
+
+      function startGame() {
+        hideMessage();
+        document.body.classList.add("bomb-place-anim-1");
+        setTimeout(() => {}, 1000);
+        setTimeout(() => {
+          // document.body.classList.remove("bomb-place-anim-1");
+          document.body.classList.add("bomb-place-anim-2");
+          shake(1);
+        }, 500);
+        setTimeout(() => {
+          // document.body.classList.remove("bomb-place-anim-2");
+          document.body.classList.add("bomb-place-anim-3");
+          document.body.classList.add("game-started");
+          startTime = Date.now();
+        }, 1000);
+      }
+
+      function setTileValue(el, value, diff = 1) {
         input[el.posX][el.posY] =
-          value !== undefined ? value : input[el.posX][el.posY] + 1;
+          value !== undefined ? value : input[el.posX][el.posY] + diff;
         input[el.posX][el.posY] %= 9;
-        el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
-          input[el.posX][el.posY] - 1
-        ];
+        if (input[el.posX][el.posY] < 0) {
+          input[el.posX][el.posY] = 8;
+        }
+        el.textContent = [1, 2, 3, 4, 5, 6, 7, 8][input[el.posX][el.posY] - 1];
+        // el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
+        //   input[el.posX][el.posY] - 1
+        // ];
 
         if (checkWin()) {
           const time = (Date.now() - startTime) / 1000;
@@ -381,14 +452,26 @@
           }, 1000);
         }
       }
+      function clickHandler(e) {
+        const el = e.target;
+        if (el.className.match(/tile/) && el.tagName === "BUTTON") {
+          setTileValue(el, undefined, e.button === 0 ? 1 : -1);
+        }
+      }
+      window.oncontextmenu = e => {
+        if (e.target.className.match(/tile/)) {
+          clickHandler(e);
+          return false; // cancel default menu
+        }
+      };
       window.onclick = e => {
         if (!grid.length) {
           return;
         }
-        const el = e.target;
-        if (el.className.match(/tile/) && el.tagName === "BUTTON") {
-          setTileValue(el);
+        if (!document.body.className.match(/game-started/)) {
+          startGame();
         }
+        clickHandler(e);
       };
 
       function navigate(el, dir) {
@@ -464,6 +547,32 @@
           navigate(e.target, "up");
         }
       };
+
+      let shakeTime;
+      function shake(time) {
+        function shakeRepeater() {
+          shakeTime -= 1 / 50;
+          document.body.style.left = `${random(-20, 20)}px`;
+          document.body.style.top = `${random(-20, 20)}px`;
+          if (shakeTime > 0) {
+            requestAnimationFrame(shakeRepeater);
+          } else {
+            document.body.marginLeft = null;
+            document.body.marginTop = null;
+          }
+        }
+        shakeTime = time;
+        shakeRepeater();
+      }
+
+      function tweetScore() {
+        window.open(
+          `http://twitter.com/share?url=${location.href}&text=🎮 I reached level ${time} of Key Battle 🔥.&count=horiztonal&hashtags=js13k,game,indiedev&via=chinchang457&related=chinchang457`
+        );
+      }
+
+      setupGame(null, 1);
+      hideMessage();
     </script>
   </body>
 </html>
