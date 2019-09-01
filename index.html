@@ -70,7 +70,7 @@
       .tile {
         font-size: calc(var(--unit) * 0.7);
         text-align: center;
-        --border-width: 8px;
+        --border-width: 0.1em;
         width: var(--unit);
         height: var(--unit);
         position: absolute;
@@ -86,16 +86,12 @@
         text-shadow: 7px -4px 0px rgba(0, 0, 0, 0.5),
           6px -4px 0px rgba(0, 0, 0, 0.6), 0px -4px 0px rgba(255, 255, 255, 0.6);
       }
-      .tile:not(.hole):not(.cover):hover,
-      .tile:not(.hole):not(.cover):focus {
+      .game-started .tile:not(.hole):not(.cover):hover,
+      .game-started .tile:not(.hole):not(.cover):focus {
         margin-left: 10px;
         margin-top: -10px;
         z-index: 10;
         box-shadow: 5px -5px 20px 2px rgba(0, 0, 0, 0.35);
-      }
-      .hill {
-        border-left: 10px solid rgba(0, 0, 0, 0.5);
-        border-bottom: 10px solid rgba(0, 0, 0, 0.3);
       }
       .cover {
         background: skyblue;
@@ -119,7 +115,7 @@
         bottom: 30px;
       }
       .bomb-place-anim-2 .hole:before {
-        height: 10px;
+        height: 0px;
       }
       .bomb-place-anim-2 .hole {
         background: white;
@@ -282,15 +278,19 @@
         2: { n: 12, mines: 20 }
       };
       const screens = [...document.querySelectorAll(".screen")];
+      let hasGameStarted = false;
+      let currentScreen = "mainmenu";
 
       function random(a, b) {
         return a + ~~(Math.random() * (b - a));
       }
+
       function changeScreen(name) {
         screens.forEach(screen => screen.classList.remove("visible"));
         document
           .querySelector(`[data-screen="${name}"]`)
           .classList.add("visible");
+        currentScreen = name;
       }
 
       function logField(arr) {
@@ -404,16 +404,17 @@
         return true;
       }
 
+      function hideMessage() {
+        window.messageEl.style.display = "none";
+      }
+
       function setupGame(e, level) {
         if (e) {
           level = parseInt(e.target.dataset.level, 10);
         }
         gen(level);
         changeScreen("game");
-      }
-
-      function hideMessage() {
-        window.messageEl.style.display = "none";
+        e.stopPropagation();
       }
 
       function startGame() {
@@ -423,12 +424,13 @@
         setTimeout(() => {
           // document.body.classList.remove("bomb-place-anim-1");
           document.body.classList.add("bomb-place-anim-2");
-          shake(1);
+          shake(0.5);
         }, 500);
         setTimeout(() => {
           // document.body.classList.remove("bomb-place-anim-2");
           document.body.classList.add("bomb-place-anim-3");
           document.body.classList.add("game-started");
+          hasGameStarted = true;
           startTime = Date.now();
         }, 1000);
       }
@@ -447,12 +449,14 @@
 
         if (checkWin()) {
           const time = (Date.now() - startTime) / 1000;
+          hasGameStarted = false;
           setTimeout(() => {
             alert(`YOU WONN! in ${time} seconds`);
           }, 1000);
         }
       }
-      function clickHandler(e) {
+      function tileClickHandler(e) {
+        if (!hasGameStarted) return;
         const el = e.target;
         if (el.className.match(/tile/) && el.tagName === "BUTTON") {
           setTileValue(el, undefined, e.button === 0 ? 1 : -1);
@@ -460,7 +464,7 @@
       }
       window.oncontextmenu = e => {
         if (e.target.className.match(/tile/)) {
-          clickHandler(e);
+          tileClickHandler(e);
           return false; // cancel default menu
         }
       };
@@ -468,10 +472,11 @@
         if (!grid.length) {
           return;
         }
-        if (!document.body.className.match(/game-started/)) {
+        if (currentScreen === "game" && !hasGameStarted) {
           startGame();
         }
-        clickHandler(e);
+
+        tileClickHandler(e);
       };
 
       function navigate(el, dir) {
@@ -549,16 +554,23 @@
       };
 
       let shakeTime;
+      const shakeIntensity = 15;
       function shake(time) {
         function shakeRepeater() {
-          shakeTime -= 1 / 50;
-          document.body.style.left = `${random(-20, 20)}px`;
-          document.body.style.top = `${random(-20, 20)}px`;
+          shakeTime -= 1 / 60;
+          document.body.style.left = `${random(
+            -shakeIntensity,
+            shakeIntensity
+          )}px`;
+          document.body.style.top = `${random(
+            -shakeIntensity,
+            shakeIntensity
+          )}px`;
           if (shakeTime > 0) {
             requestAnimationFrame(shakeRepeater);
           } else {
-            document.body.marginLeft = null;
-            document.body.marginTop = null;
+            document.body.style.marginLeft = null;
+            document.body.style.marginTop = null;
           }
         }
         shakeTime = time;
@@ -571,8 +583,8 @@
         );
       }
 
-      setupGame(null, 1);
-      hideMessage();
+      // setupGame(null, 1);
+      // hideMessage();
     </script>
   </body>
 </html>
