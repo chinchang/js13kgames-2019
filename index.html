@@ -19,6 +19,7 @@
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         font-size: 200%;
+        line-height: 1.4;
         overflow: hidden;
         margin: 0;
         min-height: 100vh;
@@ -172,15 +173,39 @@
       details[open] {
         transform: translateY(-140px);
       }
+      /* MESSAGE */
       .message {
         position: fixed;
         top: 30vh;
-        left: 0;
-        right: 0;
-        padding: 3rem;
+        left: 50%;
+        width: 3px;
+        height: 10px;
+        transform: translateX(-50%);
+        overflow: hidden;
         background: white;
+        transition: 0.4s cubic-bezier(0.99, -0.1, 0.71, 1.68);
+      }
+      .message__text {
+        overflow: hidden;
+        max-height: 0;
+      }
+      .message-anim-1 .message {
+        width: 90vw;
+      }
+      .message-anim-2 .message {
+        transition: 0.3s ease;
+        width: 90vw;
+        transform: translateX(-50%) scale(1);
+
         border: 5px solid black;
         box-shadow: 6px 6px;
+      }
+      .message-anim-2 .message__text {
+        max-height: 300px;
+      }
+      .message-anim-2 .message {
+        padding: 3rem;
+        height: auto;
       }
     </style>
   </head>
@@ -255,7 +280,7 @@
     </div>
     <div class="screen" data-screen="game">
       <div id="tileContainer" class="container"></div>
-      <div id="messageEl" class="message">Click to start</div>
+      <!-- <div id="messageEl" class="message">Click to start</div> -->
     </div>
 
     <div class="overlay"></div>
@@ -404,8 +429,26 @@
         return true;
       }
 
+      function showMessage(msg) {
+        const el = document.createElement("div");
+        el.className = "message";
+        document.body.append(el);
+        el.innerHTML = `<div class="message__text">${msg}</div>`;
+
+        setTimeout(() => {
+          document.body.classList.add("message-anim-1");
+        }, 10);
+        setTimeout(() => {
+          document.body.classList.add("message-anim-2");
+          // el.style.height =
+          //   parseInt(window.getComputedStyle(el).lineHeight, 10) +
+          //   2 * parseInt(window.getComputedStyle(el).padding, 10) +
+          //   2 * parseInt(window.getComputedStyle(el).borderWidth, 10) +
+          //   "px";
+        }, 450);
+      }
       function hideMessage() {
-        window.messageEl.style.display = "none";
+        document.querySelector(".message").remove();
       }
 
       function setupGame(e, level) {
@@ -414,13 +457,13 @@
         }
         gen(level);
         changeScreen("game");
+        showMessage("Click to start");
         e.stopPropagation();
       }
 
       function startGame() {
         hideMessage();
         document.body.classList.add("bomb-place-anim-1");
-        setTimeout(() => {}, 1000);
         setTimeout(() => {
           // document.body.classList.remove("bomb-place-anim-1");
           document.body.classList.add("bomb-place-anim-2");
