@@ -1,3 +1,5 @@
+import { Particle } from "./particle.js";
+
 const DEBUG = true;
 let cellSize = parseInt(
   window.getComputedStyle(document.documentElement).getPropertyValue("--unit")
@@ -15,6 +17,8 @@ const levels = {
 const screens = [...document.querySelectorAll(".screen")];
 let hasGameStarted = false;
 let currentScreen = "mainmenu";
+let startTime;
+let entities = [];
 
 function random(a, b) {
   return a + ~~(Math.random() * (b - a));
@@ -172,11 +176,11 @@ async function hideMessage() {
 function setupGame(e, level) {
   if (e) {
     level = parseInt(e.target.dataset.level, 10);
+    e.stopPropagation();
   }
   gen(level);
   changeScreen("game");
   showMessage("Click/Tap anywhere to start");
-  e.stopPropagation();
 }
 
 async function startGame() {
@@ -204,9 +208,28 @@ function setTileValue(el, value, diff = 1) {
     input[el.posX][el.posY] = 8;
   }
   el.textContent = [1, 2, 3, 4, 5, 6, 7, 8][input[el.posX][el.posY] - 1];
-  // el.textContent = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"][
-  //   input[el.posX][el.posY] - 1
-  // ];
+
+  const bound = el.getBoundingClientRect();
+  for (let i = random(5, 15); i--; ) {
+    entities.push(
+      new Particle({
+        height: 30,
+        width: 30,
+        x: random(bound.left, bound.left + bound.width),
+        y: random(bound.top, bound.top + bound.height),
+        vx: random(-10, 10),
+        vy: -random(20, 55),
+        isConfetti: true,
+        gravity: 0.2,
+        friction: 0.88,
+        alphaSpeed: -0.025,
+        scale: 0.3 + Math.random(0, 1),
+        angularSpeed: { x: 0, y: 0, z: random(-20, 25) },
+        color: "#5d6f41",
+        timeToDie: 0.4
+      })
+    );
+  }
 
   if (checkWin()) {
     const time = (Date.now() - startTime) / 1000;
@@ -217,6 +240,14 @@ function setTileValue(el, value, diff = 1) {
               <p><button class="btn" onclick="changeScreen('menu')">Back to menu</button></p>`
       );
     }, 10);
+
+    blast({
+      n: 30,
+      minX: W / 2 - 100,
+      maxX: W / 2 + 100,
+      minY: H / 2,
+      maxY: H / 2
+    });
   }
 }
 function tileClickHandler(e) {
@@ -232,7 +263,33 @@ window.oncontextmenu = e => {
     return false; // cancel default menu
   }
 };
+
+function blast({ n = 20, minX = 0, maxX = W, minY = 0, maxY = H, ...props }) {
+  for (let i = n; i--; ) {
+    entities.push(
+      new Particle({
+        x: minX === maxX ? minX : random(minX, maxX),
+        y: minY === maxY ? minY : random(minY, maxY),
+        vy: -random(40, 60),
+        vx: random(-40, 40),
+        isConfetti: true,
+        gravity: 0.5,
+        friction: 0.88,
+        color: `rgb(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)} )`,
+        ...props
+      })
+    );
+  }
+}
 window.onclick = e => {
+  // blast({
+  //   n: 30,
+  //   minX: W / 2 - 100,
+  //   maxX: W / 2 + 100,
+  //   minY: H / 2,
+  //   maxY: H / 2
+  // });
+
   if (!grid.length) {
     return;
   }
@@ -341,4 +398,20 @@ function tweetScore() {
   );
 }
 
+function gameLoop() {
+  entities.map(e => {
+    e.update();
+    e.draw();
+    if (e.alpha < 0) {
+      e.dead = true;
+      e.destroy();
+    }
+  });
+  entities = entities.filter(e => !e.dead);
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
 window.setupGame = setupGame;
+
+setupGame(null, 0);
