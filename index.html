@@ -39,18 +39,24 @@
         text-align: center;
         position: relative;
       }
+      .link {
+        color: antiquewhite;
+      }
       .screen {
-        position: absolute;
+        /* position: absolute; */
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         opacity: 0;
-        visibility: hidden;
+        width: 100vw;
+        min-height: 90vh;
+        display: none;
       }
       .screen.visible {
         opacity: 1;
         visibility: visible;
+        display: block;
       }
       .btn {
         font-family: inherit;
@@ -166,7 +172,7 @@
         bottom: 0;
         opacity: 0.6;
       }
-      [data-screen="game"] {
+      [data-screen="game"].visible {
         display: flex;
         justify-content: center;
         transform-style: preserve-3d;
@@ -259,17 +265,19 @@
           <summary>See Help</summary>
           <h2>If you know how to play Minesweeper:</h2>
           <p>
-            You need to play Minesweeper backwards. You know the mines and you
-            need to put correct number on each tile.
+            You need to play Minesweeper backwards. You know where the bombs and
+            you need to put correct number on each tile.
           </p>
           <h2>If you don't know how to play Minesweeper:</h2>
           <p>
             A grid will show up with bombs placed in random cells. Your task is
-            to assign correct number to the cells which do not have bomb.
+            to assign correct number to each cell which does not have a bomb.
           </p>
           <p>
             A cell's number is the count of bombs that are placed around it i.e.
-            the (at most) eight cells surrounding it, like so:
+            the (at most) eight cells surrounding it. So if there is just one
+            bomb around a cell, its number should be 1 and so on...If there is
+            no bomb around a cell, it should be left empty.
           </p>
         </details>
 
@@ -296,6 +304,11 @@
     </div>
 
     <div class="overlay"></div>
+
+    <footer>
+      A Js13kGames 2019 entry by
+      <a class="link" href="https://kushagra.dev">Kushagra Gour</a>
+    </footer>
 
     <script>
       const DEBUG = true;
@@ -328,6 +341,7 @@
           .querySelector(`[data-screen="${name}"]`)
           .classList.add("visible");
         currentScreen = name;
+        hideMessage();
       }
 
       function logField(arr) {
@@ -514,7 +528,8 @@
           hasGameStarted = false;
           setTimeout(() => {
             showMessage(
-              `You completed the level in <strong>${time} seconds!</strong>`
+              `<p>You completed the level in <strong>${time} seconds!</strong></p>
+              <p><button class="btn" onclick="changeScreen('menu')">Back to menu</button></p>`
             );
           }, 10);
         }
@@ -536,11 +551,12 @@
         if (!grid.length) {
           return;
         }
-        if (currentScreen === "game" && !hasGameStarted) {
-          startGame();
+        if (currentScreen === "game") {
+          if (!hasGameStarted) {
+            startGame();
+          }
+          tileClickHandler(e);
         }
-
-        tileClickHandler(e);
       };
 
       function navigate(el, dir) {
