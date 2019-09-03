@@ -190,7 +190,7 @@ async function startGame() {
   await wait(500);
 
   document.body.classList.add("bomb-place-anim-2");
-  shake(0.5);
+  shake({ time: 0.5 });
 
   await wait(500);
 
@@ -209,6 +209,9 @@ function setTileValue(el, value, diff = 1) {
   }
   el.textContent = [1, 2, 3, 4, 5, 6, 7, 8][input[el.posX][el.posY] - 1];
 
+  // shake tile
+  shake({ time: 0.3, el, shakeIntensity: 5 });
+  // blast on tile
   const bound = el.getBoundingClientRect();
   for (let i = random(5, 15); i--; ) {
     entities.push(
@@ -237,12 +240,12 @@ function setTileValue(el, value, diff = 1) {
     setTimeout(() => {
       showMessage(
         `<p>You completed the level in <strong>${time} seconds!</strong></p>
-              <p><button class="btn" onclick="changeScreen('menu')">Back to menu</button></p>`
+              <p><button class="btn" onclick="window.changeScreen('menu')">Back to menu</button></p>`
       );
     }, 10);
 
     blast({
-      n: 30,
+      n: 50,
       minX: W / 2 - 100,
       maxX: W / 2 + 100,
       minY: H / 2,
@@ -374,21 +377,26 @@ window.onkeyup = e => {
   }
 };
 
-let shakeTime;
-const shakeIntensity = 15;
-function shake(time) {
+function shake({ time, el = document.body, shakeIntensity = 15 }) {
+  let shakeTime = time;
   function shakeRepeater() {
     shakeTime -= 1 / 60;
-    document.body.style.left = `${random(-shakeIntensity, shakeIntensity)}px`;
-    document.body.style.top = `${random(-shakeIntensity, shakeIntensity)}px`;
+    // el.style.left = `${random(-shakeIntensity, shakeIntensity)}px`;
+    // el.style.top = `${random(-shakeIntensity, shakeIntensity)}px`;
+    el.style.transform = `translate(${random(
+      -shakeIntensity,
+      shakeIntensity
+    )}px,${random(-shakeIntensity, shakeIntensity)}px)`;
+
     if (shakeTime > 0) {
       requestAnimationFrame(shakeRepeater);
     } else {
-      document.body.style.marginLeft = null;
-      document.body.style.marginTop = null;
+      el.style.transform = null;
+
+      // el.style.marginLeft = null;
+      // el.style.marginTop = null;
     }
   }
-  shakeTime = time;
   shakeRepeater();
 }
 
@@ -413,5 +421,6 @@ function gameLoop() {
 
 gameLoop();
 window.setupGame = setupGame;
+window.changeScreen = changeScreen;
 
-setupGame(null, 0);
+// setupGame(null, 0);
