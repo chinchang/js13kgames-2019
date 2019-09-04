@@ -28,7 +28,21 @@ function changeScreen(name) {
   screens.forEach(screen => screen.classList.remove("visible"));
   document.querySelector(`[data-screen="${name}"]`).classList.add("visible");
   currentScreen = name;
+
+  // cleanup
   hideMessage();
+  if (name !== "game") {
+    grid = [];
+    input = [];
+    document.body.classList.remove(
+      "bomb-place-anim-1",
+      "bomb-place-anim-2",
+      "bomb-place-anim-3",
+      "game-started"
+    );
+
+    Array.from(tileContainer.children).map(i => i.remove());
+  }
 }
 
 function logField(arr) {
@@ -174,11 +188,21 @@ async function hideMessage() {
   document.body.classList.remove("message-anim-1");
 }
 function setupGame(e, level) {
+  async function rotateCamera() {
+    const el = document.querySelector('[data-screen="game"]');
+    // await wait(2000);
+    el.style.transition = "none";
+    el.style.perspectiveOrigin = `1170px ${H / 2}px`;
+    await wait(10);
+    el.style.transition = null;
+    el.style.perspectiveOrigin = `${W / 2}px ${H / 2}px`;
+  }
   if (e) {
     level = parseInt(e.target.dataset.level, 10);
     e.stopPropagation();
   }
   gen(level);
+  rotateCamera();
   changeScreen("game");
   showMessage("Click/Tap anywhere to start");
 }

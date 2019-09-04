@@ -180,8 +180,9 @@
       [data-screen="game"].visible {
         display: flex;
         justify-content: center;
-        /* transform-style: preserve-3d; */
+        /* transform-style: preserve-3d; doesn't work in FF */
         perspective: 1170px;
+        transition: perspective-origin 2s cubic-bezier(0.42, 0, 0.24, 1.01);
       }
       details {
         margin: 2rem;
