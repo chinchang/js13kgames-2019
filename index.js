@@ -206,7 +206,6 @@ async function hideMessage() {
 function setupGame(e, level) {
   async function rotateCamera() {
     const el = document.querySelector('[data-screen="game"]');
-    // await wait(2000);
     el.style.transition = "none";
     el.style.perspectiveOrigin = `1170px ${H / 2}px`;
     await wait(10);
@@ -231,6 +230,30 @@ async function startGame() {
 
   document.body.classList.add("bomb-place-anim-2");
   shake({ time: 0.5 });
+  const bombs = Array.from(document.querySelectorAll(".tile.hole"));
+  bombs.forEach(bomb => {
+    const bound = bomb.getBoundingClientRect();
+    for (let i = random(5, 8); i--; ) {
+      entities.push(
+        new Particle({
+          height: random(5, 15),
+          width: random(5, 15),
+          x: random(bound.left, bound.left + bound.width),
+          y: random(bound.top, bound.top + bound.height),
+          vx: random(-10, 10),
+          vy: -random(20, 55),
+          isConfetti: true,
+          gravity: 0.2,
+          friction: 0.88,
+          alphaSpeed: -0.025,
+          scale: 0.3 + Math.random(0, 1),
+          angularSpeed: { x: random(-5, 5), y: 0, z: 0 },
+          color: "#f00",
+          timeToDie: 0.7
+        })
+      );
+    }
+  });
 
   await wait(500);
 
