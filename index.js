@@ -295,6 +295,14 @@ async function winBlast() {
     minY: 100,
     maxY: H - 100
   });
+  await wait(1500);
+  blast({
+    n: 20,
+    minX: W / 2 - 200,
+    maxX: W / 2 + 200,
+    minY: 100,
+    maxY: H - 100
+  });
 }
 window.onclick = e => {
   // winBlast();
