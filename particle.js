@@ -18,7 +18,7 @@ export class Particle {
     gravity = 0,
     alphaSpeed = -0.01,
     scale = 1,
-    timeToDie = 1
+    timeToDie = 0.6
   }) {
     this.width = width;
     this.height = height;
@@ -47,7 +47,7 @@ export class Particle {
     this.el.style.backgroundColor = color;
     this.el.style.width = `${this.width}px`;
     this.el.style.height = `${this.height}px`;
-    document.body.append(this.el);
+    window.particleContainer.append(this.el);
   }
 
   destroy() {
@@ -77,7 +77,7 @@ export class Particle {
     }
   }
   draw() {
-    this.el.style.transform = `translate(${this.x}px, ${this.y}px) rotateX(${this.rotationX}deg) rotateY(${this.rotationY}deg) rotateZ(${this.rotationZ}deg) scale(${this.scale})`;
+    this.el.style.transform = `translate(${this.x}px, ${this.y}px) rotate3d(1,1,1,${this.rotationX}deg)  scale(${this.scale})`;
     this.el.style.opacity = this.alpha;
   }
 }

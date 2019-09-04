@@ -66,13 +66,17 @@
         box-shadow: 6px 6px;
         cursor: pointer;
         transition: 0.25s ease;
+        will-change: transform;
       }
       .btn:hover,
       .btn:focus {
-        transform: rotateZ(5deg);
+        transform: rotateZ(10deg);
       }
       .btn:active {
         box-shadow: 1px 1px;
+      }
+      summary {
+        cursor: pointer;
       }
       .container {
         transform: rotateX(60deg) rotateY(0deg) rotateZ(-45deg);
@@ -234,6 +238,7 @@
         top: 0;
         left: 0;
         z-index: 3;
+        will-change: transform, opacity;
         /* border: 2px solid black; */
       }
     </style>
@@ -306,6 +311,10 @@
       <!-- <div id="messageEl" class="message">Click to start</div> -->
     </div>
 
+    <div
+      id="particleContainer"
+      style="position: fixed;left:0;top:0;width:100vw;height:100vh;z-index:4;contain: strict; pointer-events: none"
+    ></div>
     <div class="overlay"></div>
 
     <footer>

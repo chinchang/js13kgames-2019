@@ -216,8 +216,8 @@ function setTileValue(el, value, diff = 1) {
   for (let i = random(5, 15); i--; ) {
     entities.push(
       new Particle({
-        height: 30,
-        width: 30,
+        height: 20,
+        width: 20,
         x: random(bound.left, bound.left + bound.width),
         y: random(bound.top, bound.top + bound.height),
         vx: random(-10, 10),
@@ -227,7 +227,7 @@ function setTileValue(el, value, diff = 1) {
         friction: 0.88,
         alphaSpeed: -0.025,
         scale: 0.3 + Math.random(0, 1),
-        angularSpeed: { x: 0, y: 0, z: random(-20, 25) },
+        angularSpeed: { x: random(-5, 5), y: 0, z: random(-20, 25) },
         color: "#5d6f41",
         timeToDie: 0.4
       })
@@ -244,13 +244,7 @@ function setTileValue(el, value, diff = 1) {
       );
     }, 10);
 
-    blast({
-      n: 50,
-      minX: W / 2 - 100,
-      maxX: W / 2 + 100,
-      minY: H / 2,
-      maxY: H / 2
-    });
+    winBlast();
   }
 }
 function tileClickHandler(e) {
@@ -284,15 +278,26 @@ function blast({ n = 20, minX = 0, maxX = W, minY = 0, maxY = H, ...props }) {
     );
   }
 }
-window.onclick = e => {
-  // blast({
-  //   n: 30,
-  //   minX: W / 2 - 100,
-  //   maxX: W / 2 + 100,
-  //   minY: H / 2,
-  //   maxY: H / 2
-  // });
 
+async function winBlast() {
+  blast({
+    n: 30,
+    minX: W / 4 - 50,
+    maxX: W / 4 + 50,
+    minY: 100,
+    maxY: H - 100
+  });
+  await wait(500);
+  blast({
+    n: 30,
+    minX: (W * 3) / 4 - 50,
+    maxX: (W * 3) / 4 + 50,
+    minY: 100,
+    maxY: H - 100
+  });
+}
+window.onclick = e => {
+  // winBlast();
   if (!grid.length) {
     return;
   }
