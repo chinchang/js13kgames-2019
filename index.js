@@ -19,9 +19,21 @@ let hasGameStarted = false;
 let currentScreen = "mainmenu";
 let startTime;
 let entities = [];
+const HIGHSCORE_KEY = "bms-high-score";
+const LAST_SCORE_KEY = "bms-last-score";
+let highScore = window.localStorage.getItem(HIGHSCORE_KEY) || 0;
+let lastGameScore = window.localStorage.getItem(LAST_SCORE_KEY) || 0;
+highScoreEl.textContent = `${highScore}s`;
+lastGameScoreEl.textContent = `${lastGameScore}s`;
 
 function random(a, b) {
   return a + ~~(Math.random() * (b - a));
+}
+
+function setStyle(el, styles) {
+  Object.keys(styles).map(key => {
+    el.style[key] = styles[key];
+  });
 }
 
 function changeScreen(name) {
@@ -68,8 +80,10 @@ function gen(level) {
   const numMines = levels[level].mines;
   cellSize = ~~((Math.min(W, H) * 0.8) / n);
   document.documentElement.style.setProperty("--unit", `${cellSize}px`);
-  tileContainer.style.left = `${cellSize * n * 0.15}px`;
-  tileContainer.style.width = `${cellSize * n}px`;
+  setStyle(tileContainer, {
+    left: `${cellSize * n * 0.15}px`,
+    width: `${cellSize * n}px`
+  });
   let minesPos = [];
   while (minesPos.length < numMines) {
     let cellIndex = random(0, n * n);
@@ -106,20 +120,22 @@ function gen(level) {
         t.setAttribute("aria-label", `Row ${j + 1}, Column ${i + 1}`);
       }
       const offset = -10;
-      t.style.transform = `translate(${offset}px, -${offset}px)`;
-      t.style.transitionDelay = `${(j * n + i) * 0.02}s`; //`${Math.random() * 0.5}s`;
-      t.style.setProperty("--blast-delay", `${Math.random() * 0.3}s`);
-      t.style.transitionTimingFunction =
-        "0.25s cubic-bezier(0, 0.6, 0.6, 1.34)";
-      t.style.opacity = 0;
+      setStyle(t, {
+        transform: `translate(${offset}px, -${offset}px)`,
+        transitionDelay: `${(j * n + i) * 0.02}s`, //`${Math.random() * 0.5}s`,
+        transitionTimingFunction: "0.25s cubic-bezier(0, 0.6, 0.6, 1.34)",
+        opacity: 0
+      });
+      t.style.setProperty("--blast-delay", `${Math.random() * 0.3}s`),
+        setTimeout(() => {
+          setStyle(t, { transform: `translate(0px, 0px)`, opacity: 1 });
+        }, 1);
       setTimeout(() => {
-        t.style.transform = `translate(0px, 0px)`;
-        t.style.opacity = 1;
-      }, 1);
-      setTimeout(() => {
-        t.style.transitionTimingFunction = null;
-        t.style.transitionDelay = null;
-        t.style.transitionDuration = null;
+        setStyle(t, {
+          transitionTimingFunction: null,
+          transitionDelay: null,
+          transitionDuration: null
+        });
       }, 2000);
       if (j === n) {
         t.setAttribute("class", "tile cover");
@@ -269,6 +285,7 @@ function setTileValue(el, value, diff = 1) {
     }, 10);
 
     winBlast();
+    saveScores(time);
   }
 }
 function tileClickHandler(e) {
@@ -437,6 +454,14 @@ function shake({ time, el = document.body, shakeIntensity = 15 }) {
   shakeRepeater();
 }
 
+function saveScores(score) {
+  if (score < highScore) {
+    window.localStorage.setItem(HIGHSCORE_KEY, score);
+    highScore = score;
+  }
+  lastGameScore = score;
+  window.localStorage.setItem(LAST_SCORE_KEY, score);
+}
 function tweetScore() {
   window.open(
     `http://twitter.com/share?url=${location.href}&text=🎮 I reached level ${time} of Key Battle 🔥.&count=horiztonal&hashtags=js13k,game,indiedev&via=chinchang457&related=chinchang457`
