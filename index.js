@@ -19,6 +19,7 @@ let hasGameStarted = false;
 let currentScreen = "mainmenu";
 let startTime;
 let entities = [];
+let currentLevel;
 const HIGHSCORE_KEY = "bms-high-score";
 const LAST_SCORE_KEY = "bms-last-score";
 let highScore = window.localStorage.getItem(HIGHSCORE_KEY) || 0;
@@ -75,14 +76,15 @@ function makeTile({ isHole, isFake }) {
   }
   return t;
 }
-function gen(level) {
+function gen(level, container = window.tileContainer) {
   n = levels[level].n;
   const numMines = levels[level].mines;
   cellSize = ~~((Math.min(W, H) * 0.8) / n);
   document.documentElement.style.setProperty("--unit", `${cellSize}px`);
-  setStyle(tileContainer, {
+  setStyle(container, {
     left: `${cellSize * n * 0.15}px`,
-    width: `${cellSize * n}px`
+    width: `${cellSize * n}px`,
+    height: `${cellSize * n}px`
   });
   let minesPos = [];
   while (minesPos.length < numMines) {
@@ -95,7 +97,7 @@ function gen(level) {
     return { y: ~~(pos / n), x: pos % n };
   });
 
-  Array.from(tileContainer.children).map(i => i.remove());
+  Array.from(container.children).map(i => i.remove());
   grid = [];
   for (var i = 0; i < n; i++) {
     grid[i] = [];
@@ -158,9 +160,8 @@ function gen(level) {
             }
         }
       }
-      tileContainer.append(t);
+      container.append(t);
     }
-  // logField(grid);
 }
 
 function checkWin() {
@@ -216,6 +217,7 @@ function setupGame(e, level) {
     level = parseInt(e.target.dataset.level, 10);
     e.stopPropagation();
   }
+  currentLevel = level;
   gen(level);
   rotateCamera();
   changeScreen("game");
@@ -303,7 +305,10 @@ function setTileValue(el, value, diff = 1) {
     setTimeout(() => {
       showMessage(
         `<p>You completed the level in <strong>${time} seconds!</strong></p>
-              <p><button class="btn" onclick="window.changeScreen('menu')">Back to menu</button></p>`
+        <p>
+          <button class="btn" onclick="window.changeScreen('menu')">👈🏽 Back to menu</button>
+          <button class="btn" onclick="window.tweetScore(${lastGameScore}, ${currentLevel})">🐦 Tweet your score!</button>
+        </p>`
       );
     }, 10);
 
@@ -485,11 +490,18 @@ function saveScores(score) {
   lastGameScore = score;
   window.localStorage.setItem(LAST_SCORE_KEY, score);
 }
-function tweetScore() {
+function tweetScore(score, level) {
+  const words = ["Yay!", "Wohoo!", "Yuhoo!", "Check it out!", "Rad!"];
   window.open(
-    `http://twitter.com/share?url=${location.href}&text=🎮 I reached level ${time} of Key Battle 🔥.&count=horiztonal&hashtags=js13k,game,indiedev&via=chinchang457&related=chinchang457`
+    `http://twitter.com/share?url=${location.href}&text=🎮 ${
+      words[random(0, words.length)]
+    } I finished "Backward Minesweeper" in just ${score} seconds in ${
+      level ? "hard" : "easy"
+    } mode! 🔥&hashtags=js13k,indiedev&related=chinchang457`
   );
 }
+
+gen(0, window.menuTileContainer);
 
 function gameLoop() {
   entities.map(e => {
@@ -507,5 +519,6 @@ function gameLoop() {
 gameLoop();
 window.setupGame = setupGame;
 window.changeScreen = changeScreen;
+window.tweetScore = tweetScore;
 
 // setupGame(null, 0);

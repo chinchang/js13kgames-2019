@@ -177,7 +177,8 @@
         bottom: 0;
         opacity: 0.6;
       }
-      [data-screen="game"].visible {
+      [data-screen="game"].visible,
+      .game-board {
         display: flex;
         justify-content: center;
         /* transform-style: preserve-3d; doesn't work in FF */
@@ -242,6 +243,27 @@
         will-change: transform, opacity;
         /* border: 2px solid black; */
       }
+      [data-screen="menu"] .container {
+        animation: board-swing 50s;
+        /* animation-direction: alternate; */
+        /* animation-fill-mode: both; */
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+        transform-origin: center center;
+      }
+      @keyframes board-swing {
+        30% {
+          transform: rotateX(60deg) rotateY(0deg) rotateZ(-15deg);
+        }
+
+        60% {
+          transform: rotateX(40deg) rotateY(0deg) rotateZ(-55deg);
+        }
+
+        80% {
+          transform: rotateX(80deg) rotateY(0deg) rotateZ(0deg);
+        }
+      }
     </style>
   </head>
   <body>
@@ -257,7 +279,7 @@
           data-level="0"
           onclick="setupGame(event)"
         >
-          Easy 💣
+          Easy 💣🙂
         </button>
         <button
           class="btn"
@@ -265,7 +287,7 @@
           data-level="1"
           onclick="setupGame(event)"
         >
-          Hard 💣💣💣
+          Hard 💣💣💣🤪
         </button>
       </div>
 
@@ -309,6 +331,15 @@
             press the numeric key to assign value directly.
           </p>
         </details>
+      </div>
+
+      <div
+        aria-hidden="true"
+        style="position:fixed;z-index:-1;top:100px;opacity:0.5;pointer-events: none"
+      >
+        <div class="game-board game-started">
+          <div id="menuTileContainer" class="container"></div>
+        </div>
       </div>
     </div>
     <div class="screen" data-screen="help">
