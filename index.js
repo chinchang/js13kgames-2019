@@ -1,6 +1,6 @@
 import { Particle } from "./particle.js";
 import { Bomb } from "./bomb.js";
-import { W, H, setStyle, random } from "./utils.js";
+import { W, H, setStyle, random, createElement } from "./utils.js";
 
 const DEBUG = true;
 let cellSize = parseInt(
@@ -58,8 +58,7 @@ function logField(arr) {
 
 function makeTile({ isHole, isFake }) {
   // const isHole = hole || Math.random() > 0.7;
-  const t = document.createElement(isFake || isHole ? "div" : "button");
-  t.classList.add("tile");
+  const t = createElement(isFake || isHole ? "div" : "button", "tile");
   if (isHole) {
     t.classList.add("hole");
     t.tileType = "hole";
@@ -176,9 +175,8 @@ function wait(duration) {
 }
 
 async function showMessage(msg) {
-  const el = document.createElement("div");
+  const el = createElement("div", "message");
   el.setAttribute("role", "alert");
-  el.className = "message";
   document.body.append(el);
   el.innerHTML = `<div class="message__text">${msg}</div>`;
 
@@ -472,6 +470,30 @@ function shake({ time, el = document.body, shakeIntensity = 15 }) {
   shakeRepeater();
 }
 
+function menuBombBlast(bomb) {
+  const bound = bomb.getBoundingClientRect();
+
+  for (let i = random(5, 20); i--; ) {
+    entities.push(
+      new Particle({
+        height: random(5, 15),
+        width: random(5, 15),
+        x: random(bound.left, bound.left + bound.width),
+        y: random(bound.top, bound.top + bound.height),
+        vx: random(-10, 10),
+        vy: -random(20, 55),
+        isConfetti: true,
+        gravity: 0.4,
+        friction: 0.88,
+        alphaSpeed: -0.025,
+        scale: 0.3 + Math.random(0, 1),
+        angularSpeed: { x: random(-5, 5), y: 0, z: 0 },
+        color: "yellow",
+        timeToDie: 0.7
+      })
+    );
+  }
+}
 function saveScores(score) {
   if (score < highScore) {
     window.localStorage.setItem(HIGHSCORE_KEY, score);
@@ -491,14 +513,12 @@ function tweetScore(score, level) {
   );
 }
 
-gen(0, window.menuTileContainer);
-
 function gameLoop() {
   if (Math.random() < 0.005) {
     entities.push(
       new Bomb({
         x: random(0, W),
-        y: 20
+        y: random(0, H / 2)
       })
     );
   }
@@ -509,28 +529,7 @@ function gameLoop() {
       e.dead = true;
 
       if (e.type === "bomb") {
-        const bound = e.el.getBoundingClientRect();
-
-        for (let i = random(5, 8); i--; ) {
-          entities.push(
-            new Particle({
-              height: random(5, 15),
-              width: random(5, 15),
-              x: random(bound.left, bound.left + bound.width),
-              y: random(bound.top, bound.top + bound.height),
-              vx: random(-10, 10),
-              vy: -random(20, 55),
-              isConfetti: true,
-              gravity: 0.4,
-              friction: 0.88,
-              alphaSpeed: -0.025,
-              scale: 0.3 + Math.random(0, 1),
-              angularSpeed: { x: random(-5, 5), y: 0, z: 0 },
-              color: "yellow",
-              timeToDie: 0.7
-            })
-          );
-        }
+        menuBombBlast(e.el);
       }
       e.destroy();
     }
@@ -539,9 +538,25 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
-window.setupGame = setupGame;
-window.changeScreen = changeScreen;
-window.tweetScore = tweetScore;
+function init() {
+  // menu gameboard
+  gen(0, window.menuTileContainer);
+  gameLoop();
 
-// setupGame(null, 0);
+  const letters = "Minesweeper".split("");
+  letters.forEach((letter, i) => {
+    const el = createElement("div", "title-letter title-letter-odd");
+    el.textContent = letter;
+    titleEl.append(el);
+
+    const el2 = createElement("div", "title-letter ");
+    el2.textContent = letters[letters.length - i - 1];
+    titleEl.append(el2);
+  });
+
+  window.setupGame = setupGame;
+  window.changeScreen = changeScreen;
+  window.tweetScore = tweetScore;
+}
+
+init();
