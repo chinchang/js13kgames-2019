@@ -1,11 +1,11 @@
 import { Particle } from "./particle.js";
+import { Bomb } from "./bomb.js";
+import { W, H, setStyle, random } from "./utils.js";
 
 const DEBUG = true;
 let cellSize = parseInt(
   window.getComputedStyle(document.documentElement).getPropertyValue("--unit")
 );
-const W = window.innerWidth;
-const H = window.innerHeight;
 let grid = [];
 let input = [];
 let n = 6;
@@ -26,16 +26,6 @@ let highScore = window.localStorage.getItem(HIGHSCORE_KEY) || 0;
 let lastGameScore = window.localStorage.getItem(LAST_SCORE_KEY) || 0;
 highScoreEl.textContent = `${highScore}s`;
 lastGameScoreEl.textContent = `${lastGameScore}s`;
-
-function random(a, b) {
-  return a + ~~(Math.random() * (b - a));
-}
-
-function setStyle(el, styles) {
-  Object.keys(styles).map(key => {
-    el.style[key] = styles[key];
-  });
-}
 
 function changeScreen(name) {
   screens.forEach(screen => screen.classList.remove("visible"));
@@ -504,11 +494,44 @@ function tweetScore(score, level) {
 gen(0, window.menuTileContainer);
 
 function gameLoop() {
+  if (Math.random() < 0.005) {
+    entities.push(
+      new Bomb({
+        x: random(0, W),
+        y: 20
+      })
+    );
+  }
   entities.map(e => {
     e.update();
     e.draw();
-    if (e.alpha < 0) {
+    if (e.hasHitEnd()) {
       e.dead = true;
+
+      if (e.type === "bomb") {
+        const bound = e.el.getBoundingClientRect();
+
+        for (let i = random(5, 8); i--; ) {
+          entities.push(
+            new Particle({
+              height: random(5, 15),
+              width: random(5, 15),
+              x: random(bound.left, bound.left + bound.width),
+              y: random(bound.top, bound.top + bound.height),
+              vx: random(-10, 10),
+              vy: -random(20, 55),
+              isConfetti: true,
+              gravity: 0.4,
+              friction: 0.88,
+              alphaSpeed: -0.025,
+              scale: 0.3 + Math.random(0, 1),
+              angularSpeed: { x: random(-5, 5), y: 0, z: 0 },
+              color: "yellow",
+              timeToDie: 0.7
+            })
+          );
+        }
+      }
       e.destroy();
     }
   });

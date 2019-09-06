@@ -53,6 +53,9 @@ export class Particle {
   destroy() {
     this.el.remove();
   }
+  hasHitEnd() {
+    this.alpha < 0;
+  }
   update() {
     this.x += this.vx;
     this.y += this.vy;
