@@ -493,10 +493,10 @@ const tm = window.TinyMusic || require("./TinyMusic.min.js");
 var ac = new AudioContext();
 
 // set the playback tempo (120 beats per minute)
-var tempo = 150;
+var winningSoundTempo = 220;
 
 // create a new sequence
-var winSound1 = new tm.Sequence(ac, tempo, [
+var winSound1 = new tm.Sequence(ac, winningSoundTempo, [
   "F5 s",
   "- es",
   "F5 es",
@@ -512,7 +512,7 @@ var winSound1 = new tm.Sequence(ac, tempo, [
   "A5 es",
   "A5 q"
 ]);
-var winSound2 = new tm.Sequence(ac, tempo, [
+var winSound2 = new tm.Sequence(ac, winningSoundTempo, [
   "A5 s",
   "- es",
   "A5 es",
@@ -529,7 +529,7 @@ var winSound2 = new tm.Sequence(ac, tempo, [
   "C#6 q"
 ]);
 
-var winSound3 = new tm.Sequence(ac, tempo, [
+var winSound3 = new tm.Sequence(ac, winningSoundTempo, [
   "C6 s",
   "- es",
   "C6 es",
@@ -550,7 +550,7 @@ winSound2.loop = false;
 winSound3.loop = false;
 winSound1.waveType = "triangle";
 winSound2.waveType = "triangle";
-winSound3.waveType = "sine";
+winSound3.waveType = "triangle";
 
 export function playWinSound() {
   winSound1.play();
