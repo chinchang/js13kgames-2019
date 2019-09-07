@@ -16,7 +16,7 @@ const levels = {
 };
 const screens = [...document.querySelectorAll(".screen")];
 let hasGameStarted = false;
-let currentScreen = "mainmenu";
+let currentScreen = "menu";
 let startTime;
 let entities = [];
 let currentLevel;
@@ -514,7 +514,7 @@ function tweetScore(score, level) {
 }
 
 function gameLoop() {
-  if (Math.random() < 0.005) {
+  if (currentScreen === "menu" && Math.random() < 0.005) {
     entities.push(
       new Bomb({
         x: random(0, W),
