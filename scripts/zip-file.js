@@ -2,7 +2,7 @@
 const fs = require("fs");
 const archiver = require("archiver");
 
-const distDir = process.cwd() + "/dist";
+const distDir = process.cwd() + "/public";
 const output = fs.createWriteStream(distDir + "/game.zip");
 const archive = archiver("zip", { zlib: { level: 9 } });
 

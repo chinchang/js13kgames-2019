@@ -4,7 +4,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 const MAX_BYTES = 13312;
-const filename = "./dist/game.zip";
+const filename = "./public/game.zip";
 
 function getFilesizeInBytes(filename) {
   return fs.statSync(filename).size;

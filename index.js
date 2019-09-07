@@ -1,6 +1,7 @@
 import { Particle } from "./particle.js";
 import { Bomb } from "./bomb.js";
 import { W, H, setStyle, random, createElement } from "./utils.js";
+import { playSound, playWinSound } from "./sfx.js";
 
 const DEBUG = true;
 let cellSize = parseInt(
@@ -26,6 +27,35 @@ let highScore = window.localStorage.getItem(HIGHSCORE_KEY) || 0;
 let lastGameScore = window.localStorage.getItem(LAST_SCORE_KEY) || 0;
 highScoreEl.textContent = `${highScore}s`;
 lastGameScoreEl.textContent = `${lastGameScore}s`;
+
+const sounds = {
+  laser: [
+    0,
+    0,
+    0.20186369123006712,
+    0.08864788869394417,
+    0.3533138312310672,
+    0.730741378990208,
+    0.2,
+    -0.18340614838729788,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0.13312363811900763,
+    0.13711016008646912,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0.1086867241891986,
+    0,
+    0.5
+  ]
+};
 
 function changeScreen(name) {
   screens.forEach(screen => screen.classList.remove("visible"));
@@ -184,6 +214,7 @@ async function showMessage(msg) {
   document.body.classList.add("message-anim-1");
   await wait(430);
   document.body.classList.add("message-anim-2");
+  playSound("powerup");
 }
 async function hideMessage() {
   document.body.classList.remove("message-anim-2");
@@ -214,13 +245,20 @@ function setupGame(e, level) {
 
 async function startGame() {
   hideMessage();
+  const bombs = Array.from(document.querySelectorAll(".tile.hole"));
+
   document.body.classList.add("bomb-place-anim-1");
+
+  bombs.forEach(bomb => {
+    setTimeout(() => {
+      playSound("laser");
+    }, random(0, 500));
+  });
 
   await wait(500);
 
   document.body.classList.add("bomb-place-anim-2");
   shake({ time: 0.5 });
-  const bombs = Array.from(document.querySelectorAll(".tile.hole"));
   bombs.forEach(bomb => {
     const bound = bomb.getBoundingClientRect();
     for (let i = random(5, 8); i--; ) {
@@ -243,6 +281,10 @@ async function startGame() {
         })
       );
     }
+
+    setTimeout(() => {
+      playSound("explosion");
+    }, random(0, 500));
   });
 
   await wait(500);
@@ -264,6 +306,9 @@ function setTileValue(el, value, diff = 1) {
 
   // shake tile
   shake({ time: 0.3, el, shakeIntensity: 5 });
+
+  playSound("hit");
+
   // blast on tile
   const bound = el.getBoundingClientRect();
   for (let i = random(5, 15); i--; ) {
@@ -301,6 +346,7 @@ function setTileValue(el, value, diff = 1) {
     }, 10);
 
     winBlast();
+    playWinSound();
     saveScores(time);
   }
 }
@@ -344,6 +390,7 @@ async function winBlast() {
     minY: 100,
     maxY: H - 100
   });
+  playSound("winExplosion");
   await wait(500);
   blast({
     n: 30,
@@ -352,7 +399,11 @@ async function winBlast() {
     minY: 100,
     maxY: H - 100
   });
+  playSound("winExplosion");
+
   await wait(1500);
+  playSound("winExplosion");
+
   blast({
     n: 20,
     minX: W / 2 - 200,
@@ -558,5 +609,6 @@ function init() {
   window.changeScreen = changeScreen;
   window.tweetScore = tweetScore;
 }
+// playWinSound();
 
 init();
