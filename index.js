@@ -101,7 +101,7 @@ function gen(level, container = window.tileContainer) {
   cellSize = ~~((Math.min(W, H) * 0.8) / n);
   document.documentElement.style.setProperty("--unit", `${cellSize}px`);
   setStyle(container, {
-    left: `${cellSize * n * 0.15}px`,
+    // left: `${cellSize * n * 0.15}px`,
     width: `${cellSize * n}px`,
     height: `${cellSize * n}px`
   });
@@ -593,17 +593,6 @@ function init() {
   // menu gameboard
   gen(0, window.menuTileContainer);
   gameLoop();
-
-  const letters = "Minesweeper".split("");
-  letters.forEach((letter, i) => {
-    const el = createElement("div", "title-letter title-letter-odd");
-    el.textContent = letter;
-    titleEl.append(el);
-
-    const el2 = createElement("div", "title-letter ");
-    el2.textContent = letters[letters.length - i - 1];
-    titleEl.append(el2);
-  });
 
   window.setupGame = setupGame;
   window.changeScreen = changeScreen;
