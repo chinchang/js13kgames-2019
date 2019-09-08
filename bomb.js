@@ -1,5 +1,4 @@
-import { Particle } from "./particle";
-import { W, H, random } from "./utils.js";
+import { H, random } from "./utils.js";
 
 export class Bomb {
   constructor({
@@ -7,9 +6,7 @@ export class Bomb {
     height = 100,
     x = 0,
     y = 0,
-    rotationX = 0,
-    rotationY = 0,
-    rotationZ = 0,
+
     angularSpeed = { x: 10, y: 10, z: 10 },
     alpha = 0,
     vx = 0,
@@ -25,9 +22,7 @@ export class Bomb {
     this.height = height;
     this.x = x;
     this.y = y;
-    this.rotationX = rotationX;
-    this.rotationY = rotationY;
-    this.rotationZ = rotationZ;
+    this.rotationZ = random(0, 360);
     this.alpha = alpha;
     this.vx = vx;
     this.vy = vy;
@@ -65,6 +60,7 @@ export class Bomb {
       this.bounces--;
       if (this.bounces) {
         this.y = H - this.height - 1;
+        this.rotationZ = this.rotationZ + random(-50, 50);
         // this.gravity = 0;
         this.vy = -this.vy * 0.5;
       } else {
@@ -79,7 +75,7 @@ export class Bomb {
     }
   }
   draw() {
-    this.el.style.transform = `translate(${this.x}px, ${this.y}px) rotate3d(1,1,1,${this.rotationX}deg)  scale(${this.scale})`;
+    this.el.style.transform = `translate(${this.x}px, ${this.y}px) rotateZ(${this.rotationZ}deg)  scale(${this.scale})`;
     this.el.style.opacity = this.alpha;
   }
 }

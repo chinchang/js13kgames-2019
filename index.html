@@ -54,6 +54,7 @@
       }
       .screen {
         /* position: absolute; */
+        /* contain: size layout paint style; */
         top: 0;
         left: 0;
         right: 0;
@@ -106,7 +107,7 @@
         border-left: var(--border-width) solid rgba(0, 0, 0, 0.5);
         border-bottom: var(--border-width) solid rgba(0, 0, 0, 0.3);
         color: rgb(65, 78, 45);
-
+        contain: size layout style;
         transition: opacity 0.25s ease, border 0.25s ease, margin 0.25s ease,
           color 0.25s ease;
       }
@@ -211,6 +212,7 @@
       /* MESSAGE */
       .message {
         position: fixed;
+        contain: layout style paint;
         top: 30vh;
         left: 50%;
         width: 3px;
@@ -252,7 +254,7 @@
         left: 0;
         z-index: 3;
         will-change: transform, opacity;
-        /* border: 2px solid black; */
+        contain: size layout paint style;
       }
       [data-screen="menu"] .container {
         animation: board-swing 50s;
@@ -277,6 +279,7 @@
       }
       .bomb {
         position: fixed;
+        contain: size layout paint paint;
         height: 100px;
         height: 100px;
         font-size: 100px;
@@ -412,7 +415,7 @@
 
     <div
       id="particleContainer"
-      style="position: fixed;left:0;top:0;width:100vw;height:100vh;z-index:4;contain: strict; pointer-events: none"
+      style="position: fixed;left:0;top:0;width:100vw;height:100vh;z-index:4;contain: size layout paint style; pointer-events: none"
     ></div>
     <div class="overlay"></div>
 

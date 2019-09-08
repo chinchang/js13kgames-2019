@@ -1,3 +1,5 @@
+import { H } from "./utils";
+
 export class Particle {
   constructor({
     width = 15,
@@ -47,6 +49,7 @@ export class Particle {
     this.el.style.backgroundColor = color;
     this.el.style.width = `${this.width}px`;
     this.el.style.height = `${this.height}px`;
+    this.draw();
     window.particleContainer.append(this.el);
   }
 
@@ -54,7 +57,7 @@ export class Particle {
     this.el.remove();
   }
   hasHitEnd() {
-    this.alpha < 0;
+    return this.alpha < 0 || this.y > H;
   }
   update() {
     this.x += this.vx;
@@ -84,5 +87,3 @@ export class Particle {
     this.el.style.opacity = this.alpha;
   }
 }
-
-export function blast(n = 10) {}

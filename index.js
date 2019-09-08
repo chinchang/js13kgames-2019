@@ -576,7 +576,7 @@ function gameLoop() {
   entities.map(e => {
     e.update();
     e.draw();
-    if (e.hasHitEnd()) {
+    if (e.hasHitEnd && e.hasHitEnd()) {
       e.dead = true;
 
       if (e.type === "bomb") {
