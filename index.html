@@ -189,6 +189,10 @@
         bottom: 0;
         opacity: 0.6;
       }
+      [data-screen="game"] {
+        flex-direction: column;
+      }
+
       [data-screen="game"].visible,
       .game-board {
         display: flex;
@@ -342,6 +346,7 @@
         <button
           class="btn"
           type="button"
+          aria-label="Play easy mode"
           data-level="0"
           onclick="setupGame(event)"
         >
@@ -350,6 +355,7 @@
         <button
           class="btn"
           type="button"
+          aria-label="Play hard mode"
           data-level="1"
           onclick="setupGame(event)"
         >
@@ -414,10 +420,12 @@
     </div>
     <div class="screen" data-screen="game">
       <div id="tileContainer" class="container"></div>
+      <div class="time" id="timeEl">0 seconds</div>
       <!-- <div id="messageEl" class="message">Click to start</div> -->
     </div>
 
     <div
+      aria-hidden="true"
       id="particleContainer"
       style="position: fixed;left:0;top:0;width:100vw;height:100vh;z-index:4;contain: size layout paint style; pointer-events: none"
     ></div>

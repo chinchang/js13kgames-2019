@@ -16,7 +16,12 @@ const levels = {
   2: { n: 12, mines: 20 }
 };
 const screens = [...document.querySelectorAll(".screen")];
-let hasGameStarted = false;
+const GAME_STATES = {
+  NOT_STARTED: "notStarted",
+  STARTED: "started",
+  ENDED: "ended"
+};
+let gameState = GAME_STATES.NOT_STARTED;
 let currentScreen = "menu";
 let startTime;
 let entities = [];
@@ -64,6 +69,7 @@ function changeScreen(name) {
 
   // cleanup
   hideMessage();
+
   if (name !== "game") {
     grid = [];
     input = [];
@@ -75,6 +81,7 @@ function changeScreen(name) {
     );
 
     Array.from(tileContainer.children).map(i => i.remove());
+    gameState = GAME_STATES.NOT_STARTED;
   }
 }
 
@@ -86,16 +93,23 @@ function logField(arr) {
   }
 }
 
-function makeTile({ isHole, isFake }) {
+function makeTile({ isHole, isFake, isDummy }) {
   // const isHole = hole || Math.random() > 0.7;
-  const t = createElement(isFake || isHole ? "div" : "button", "tile");
+  const t = createElement(
+    isFake || isHole || isDummy ? "div" : "button",
+    "tile"
+  );
   if (isHole) {
     t.classList.add("hole");
     t.tileType = "hole";
   }
+  if (t.tagName === "BUTTON") {
+    t.setAttribute("type", "button");
+  }
   return t;
 }
-function gen(level, container = window.tileContainer) {
+
+function gen(level, container = window.tileContainer, isDummy) {
   n = levels[level].n;
   const numMines = levels[level].mines;
   cellSize = ~~((Math.min(W, H) * 0.8) / n);
@@ -130,7 +144,8 @@ function gen(level, container = window.tileContainer) {
     for (var i = 0; i < n; i++) {
       const t = makeTile({
         isHole: minesPos.some(pos => pos.x === i && pos.y === j),
-        isFake: j === n
+        isFake: j === n,
+        isDummy
       });
       t.style.top = `${j * cellSize}px`;
       t.style.left = `${i * cellSize}px`;
@@ -138,7 +153,11 @@ function gen(level, container = window.tileContainer) {
       t.posX = i;
       t.posY = j;
       if (!t.className.match(/(hole|cover)/)) {
-        t.setAttribute("aria-label", `Row ${j + 1}, Column ${i + 1}`);
+        setTileLabel(t, j + 1, i + 1, 0);
+      }
+      if (t.className.match(/hole/)) {
+        setTileLabel(t, j + 1, i + 1, "Bomb");
+        t.setAttribute("tabindex", 0);
       }
       const offset = -10;
       setStyle(t, {
@@ -250,9 +269,10 @@ async function startGame() {
   document.body.classList.add("bomb-place-anim-1");
 
   bombs.forEach(bomb => {
+    console.log("laser");
     setTimeout(() => {
       playSound("laser");
-    }, random(0, 500));
+    }, random(0, 600));
   });
 
   await wait(500);
@@ -291,10 +311,12 @@ async function startGame() {
 
   document.body.classList.add("bomb-place-anim-3");
   document.body.classList.add("game-started");
-  hasGameStarted = true;
+  gameState = GAME_STATES.STARTED;
   startTime = Date.now();
 }
-
+function setTileLabel(el, row, col, value) {
+  el.setAttribute("aria-label", `Row ${row}, Column ${col}, Value ${value}`);
+}
 function setTileValue(el, value, diff = 1) {
   input[el.posX][el.posY] =
     value !== undefined ? value : input[el.posX][el.posY] + diff;
@@ -303,6 +325,7 @@ function setTileValue(el, value, diff = 1) {
     input[el.posX][el.posY] = 8;
   }
   el.textContent = [1, 2, 3, 4, 5, 6, 7, 8][input[el.posX][el.posY] - 1];
+  setTileLabel(el, el.posY + 1, el.posX + 1, input[el.posX][el.posY]);
 
   // shake tile
   shake({ time: 0.3, el, shakeIntensity: 5 });
@@ -334,7 +357,7 @@ function setTileValue(el, value, diff = 1) {
 
   if (checkWin()) {
     const time = (Date.now() - startTime) / 1000;
-    hasGameStarted = false;
+    gameState = GAME_STATES.ENDED;
     setTimeout(() => {
       showMessage(
         `<p>You completed the level in <strong>${time} seconds!</strong></p>
@@ -351,7 +374,7 @@ function setTileValue(el, value, diff = 1) {
   }
 }
 function tileClickHandler(e) {
-  if (!hasGameStarted) return;
+  if (gameState !== GAME_STATES.STARTED) return;
   const el = e.target;
   if (el.className.match(/tile/) && el.tagName === "BUTTON") {
     setTileValue(el, undefined, e.button === 0 ? 1 : -1);
@@ -418,10 +441,12 @@ window.onclick = e => {
     return;
   }
   if (currentScreen === "game") {
-    if (!hasGameStarted) {
+    if (gameState === GAME_STATES.NOT_STARTED) {
       startGame();
     }
-    tileClickHandler(e);
+    if (gameState === GAME_STATES.STARTED) {
+      tileClickHandler(e);
+    }
   }
 };
 
@@ -439,10 +464,7 @@ function navigate(el, dir) {
         ? nextEl[fnName]
         : el.parentElement.children[dir === "right" ? 0 : n * n - 1])
     ) {
-      if (
-        !nextEl.classList.contains("hole") &&
-        !nextEl.className.match(/cover/)
-      ) {
+      if (!nextEl.className.match(/cover/)) {
         break;
       }
     }
@@ -456,10 +478,7 @@ function navigate(el, dir) {
           ? getVerticalEl(nextEl, nextEl.posX, nextEl.posY + diff)
           : getVerticalEl(nextEl, nextEl.posX, dir === "down" ? 0 : n - 1))
     ) {
-      if (
-        !nextEl.classList.contains("hole") &&
-        !nextEl.className.match(/cover/)
-      ) {
+      if (!nextEl.className.match(/cover/)) {
         break;
       }
     }
@@ -565,6 +584,8 @@ function tweetScore(score, level) {
 }
 
 function gameLoop() {
+  const now = Date.now();
+
   if (currentScreen === "menu" && Math.random() < 0.005) {
     entities.push(
       new Bomb({
@@ -572,6 +593,11 @@ function gameLoop() {
         y: random(0, H / 2)
       })
     );
+  }
+
+  if (gameState === GAME_STATES.STARTED) {
+    const time = ~~(now - startTime);
+    window.timeEl.textContent = `${time} seconds`;
   }
   entities.map(e => {
     e.update();
@@ -591,7 +617,7 @@ function gameLoop() {
 
 function init() {
   // menu gameboard
-  gen(0, window.menuTileContainer);
+  gen(0, window.menuTileContainer, true);
   gameLoop();
 
   window.setupGame = setupGame;
