@@ -103,7 +103,7 @@ bass.treble.frequency.value = 1400;
 // disable looping
 bass.loop = false;
 
-const lead = new tm.Sequence(ac, tempo, [
+const leadNotes = [
   "B3 e",
   "B3 s",
   "B3 s",
@@ -290,16 +290,25 @@ const lead = new tm.Sequence(ac, tempo, [
   "A3 e",
   "A3 e"
   // break
-]);
-lead.staccato = 0.4;
-lead.gain.gain.value = 0.7;
-lead.mid.frequency.value = 800;
-lead.mid.gain.value = 3;
+];
 
-lead.loop = true;
+const lead = new tm.Sequence(ac, tempo, leadNotes);
+const lead2 = new tm.Sequence(ac, tempo, leadNotes);
+
+[lead, lead2].forEach(l => {
+  l.staccato = 0.4;
+  l.gain.gain.value = 0.7;
+  l.mid.frequency.value = 800;
+  l.mid.gain.value = 3;
+  l.loop = true;
+  l.waveType = "triangle";
+});
+
 bass.loop = true;
-lead.waveType = "triangle";
 
 // play it
 bass.play();
 lead.play();
+setTimeout(() => {
+  lead2.play();
+}, 8000);
