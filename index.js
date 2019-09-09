@@ -73,6 +73,7 @@ function changeScreen(name) {
   if (name !== "game") {
     grid = [];
     input = [];
+    timeEl.textContent = "0 seconds";
     document.body.classList.remove(
       "bomb-place-anim-1",
       "bomb-place-anim-2",
@@ -259,7 +260,19 @@ function setupGame(e, level) {
   gen(level);
   rotateCamera();
   changeScreen("game");
-  showMessage("Click/Tap anywhere to start");
+
+  showMessage("Click/Tap anywhere or press any key to start").then(() => {
+    window.addEventListener(
+      "keyup",
+      () => {
+        // debugger;
+        if (gameState === GAME_STATES.NOT_STARTED) {
+          startGame();
+        }
+      },
+      { once: true }
+    );
+  });
 }
 
 async function startGame() {
@@ -269,7 +282,6 @@ async function startGame() {
   document.body.classList.add("bomb-place-anim-1");
 
   bombs.forEach(bomb => {
-    console.log("laser");
     setTimeout(() => {
       playSound("laser");
     }, random(0, 600));
@@ -358,14 +370,15 @@ function setTileValue(el, value, diff = 1) {
   if (checkWin()) {
     const time = (Date.now() - startTime) / 1000;
     gameState = GAME_STATES.ENDED;
-    setTimeout(() => {
-      showMessage(
+    setTimeout(async () => {
+      await showMessage(
         `<p>You completed the level in <strong>${time} seconds!</strong></p>
         <p>
           <button class="btn" onclick="window.changeScreen('menu')">👈🏽 Back to menu</button>
           <button class="btn" onclick="window.tweetScore(${lastGameScore}, ${currentLevel})">🐦 Tweet your score!</button>
         </p>`
       );
+      document.querySelector(".message button").focus();
     }, 10);
 
     winBlast();
@@ -489,6 +502,10 @@ function navigate(el, dir) {
 window.onkeyup = e => {
   // console.log(e.key);
   const target = e.target;
+
+  if (gameState !== GAME_STATES.STARTED) {
+    return;
+  }
 
   if (!target.className.match(/tile/)) {
     if (["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown"].includes(e.key)) {
