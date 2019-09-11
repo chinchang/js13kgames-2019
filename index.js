@@ -636,12 +636,21 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+function insertCloseButtonInDetails() {
+  const els = document.querySelectorAll("details");
+  els.forEach(el => {
+    el.innerHTML += `<p><button class="btn">Close</button></p>`;
+    el.querySelector("button").addEventListener("click", () => {
+      el.open = false;
+    });
+  });
+}
 function init() {
   // menu gameboard
   gen(0, window.menuTileContainer, true);
   gameLoop();
   updateScoreUi();
-
+  insertCloseButtonInDetails();
   window.setupGame = setupGame;
   window.changeScreen = changeScreen;
   window.tweetScore = tweetScore;
