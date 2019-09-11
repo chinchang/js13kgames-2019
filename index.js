@@ -611,7 +611,7 @@ function gameLoop() {
   }
 
   if (gameState === GAME_STATES.STARTED) {
-    const time = ~~(now - startTime);
+    const time = (~~(now - startTime) / 1000).toFixed(1);
     window.timeEl.textContent = `${time} seconds`;
   }
   entities.map(e => {
