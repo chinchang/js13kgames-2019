@@ -586,7 +586,7 @@ function menuBombBlast(bomb) {
   }
 }
 function saveScores(score) {
-  if (score < highScore[currentLevel]) {
+  if (score < highScore[currentLevel] || !highScore[currentLevel]) {
     highScore[currentLevel] = score;
     window.localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(highScore));
     updateScoreUi();
