@@ -24,12 +24,16 @@ Click any cell to cycle between values 0 to 8. Left click increments by 1 and ri
 
 ### Keyboard
 
+**This game is screen-reader compatible.**
+
 Navigate through cells with <kbd>Tab</kbd> or <kbd>Arrow</kbd> keys. Press <kbd>Space</kbd> or <kbd>Enter</kbd> key to cycle between values 0 to 8 or simply press the numeric key to assign value directly.
 
 ## Technical details
 
 - The game is made with web technologies: HTML, CSS and JavaScript.
 - It is completely DOM based. Uses no Canvas!
+- Being DOM based, the game inherently screen-reader compatible!
+- The zipped size of the game is less than 13KB, of course :)
 
 ## License
 
