@@ -193,7 +193,7 @@
         right: 0;
         top: 0;
         bottom: 0;
-        opacity: 0.6;
+        opacity: 0.4;
       }
       [data-screen="game"] {
         flex-direction: column;
@@ -209,16 +209,19 @@
         transition: perspective-origin 2s cubic-bezier(0.42, 0, 0.24, 1.01);
       }
       details {
-        margin: 2rem;
+        margin: 2rem auto;
         padding: 2rem;
         color: black;
         background: white;
         transition: 0.5s cubic-bezier(0.5, -0.03, 0.25, 1);
         border: 5px solid;
         box-shadow: 6px 6px;
+        width: 95vw;
+        max-width: 600px;
       }
       details[open] {
         transform: translateY(-240px);
+        max-width: 95vw;
       }
       /* MESSAGE */
       .message {
@@ -426,7 +429,7 @@
     </div>
     <div class="screen" data-screen="game">
       <div id="tileContainer" class="container"></div>
-      <div class="time" id="timeEl">0 seconds</div>
+      <div class="time">Your time: <span id="timeEl">0</span> seconds</div>
       <!-- <div id="messageEl" class="message">Click to start</div> -->
     </div>
 

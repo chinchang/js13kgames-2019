@@ -34,7 +34,6 @@ let highScore = (window.localStorage.getItem(HIGHSCORE_KEY) &&
   1: 0
 };
 let lastGameScore;
-console.log(highScore);
 const sounds = {
   laser: [
     0,
@@ -82,7 +81,7 @@ function changeScreen(name) {
   if (name !== "game") {
     grid = [];
     input = [];
-    timeEl.textContent = "0 seconds";
+    timeEl.textContent = "0";
     document.body.classList.remove(
       "bomb-place-anim-1",
       "bomb-place-anim-2",
@@ -618,7 +617,7 @@ function gameLoop() {
 
   if (gameState === GAME_STATES.STARTED) {
     const time = (~~(now - startTime) / 1000).toFixed(1);
-    window.timeEl.textContent = `${time} seconds`;
+    window.timeEl.textContent = time;
   }
   entities.map(e => {
     e.update();
