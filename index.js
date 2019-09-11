@@ -598,7 +598,7 @@ function tweetScore(score, level) {
   window.open(
     `http://twitter.com/share?url=${location.href}&text=🎮 ${
       words[random(0, words.length)]
-    } I finished "Backward Minesweeper" in just ${score} seconds in ${
+    } I finished "Repeewsenim" in just ${score} seconds in ${
       level ? "hard" : "easy"
     } mode! 🔥&hashtags=js13k,indiedev&related=chinchang457`
   );
