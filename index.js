@@ -593,13 +593,22 @@ function saveScores(score) {
   lastGameScore = score;
 }
 function tweetScore(score, level) {
-  const words = ["Yay!", "Wohoo!", "Yuhoo!", "Check it out!", "Rad!"];
+  const words = [
+    "Yay!",
+    "Wohoo!",
+    "Yuhoo!",
+    "Check it out!",
+    "Rad!",
+    "Dang!",
+    "Woah!",
+    "Beat this!"
+  ];
   window.open(
     `http://twitter.com/share?url=${location.href}&text=🎮 ${
       words[random(0, words.length)]
     } I finished "Repeewsenim" in just ${score} seconds in ${
       level ? "hard" : "easy"
-    } mode! 🔥&hashtags=js13k,indiedev&related=chinchang457`
+    } mode! 🔥💣&hashtags=js13k,indiedev&related=chinchang457`
   );
 }
 
