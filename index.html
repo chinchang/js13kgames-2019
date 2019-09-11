@@ -52,6 +52,9 @@
       .link {
         color: antiquewhite;
       }
+      .small-text {
+        font-size: 0.7em;
+      }
       .screen {
         /* position: absolute; */
         /* contain: size layout paint style; */
@@ -87,6 +90,9 @@
       }
       .btn:active {
         box-shadow: 1px 1px;
+      }
+      .btn p {
+        margin-bottom: 0;
       }
       summary {
         cursor: pointer;
@@ -346,27 +352,26 @@
         <button
           class="btn"
           type="button"
-          aria-label="Play easy mode"
           data-level="0"
           onclick="setupGame(event)"
         >
-          Easy 💣🙂
+          Play easy <span aria-hidden="true">🙂</span>
+          <p class="small-text">
+            Highscore: <span id="easyHighScoreEl">-</span>
+          </p>
         </button>
         <button
           class="btn"
           type="button"
-          aria-label="Play hard mode"
           data-level="1"
           onclick="setupGame(event)"
         >
-          Hard 💣💣💣🤪
+          Play hard <span aria-hidden="true">🤪</span>
+          <p class="small-text">
+            Highscore: <span id="hardHighScoreEl">-</span>
+          </p>
         </button>
       </div>
-
-      <p>
-        Last game score: <span id="lastGameScoreEl"></span> / Highscore:
-        <span id="highScoreEl"></span>
-      </p>
 
       <div>
         <details>
@@ -432,7 +437,7 @@
     ></div>
     <div class="overlay"></div>
 
-    <footer style="font-size:0.7em">
+    <footer class="small-text">
       A Js13kGames 2019 entry by
       <a class="link" href="https://kushagra.dev">Kushagra Gour</a>
     </footer>

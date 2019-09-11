@@ -28,11 +28,13 @@ let entities = [];
 let currentLevel;
 const HIGHSCORE_KEY = "bms-high-score";
 const LAST_SCORE_KEY = "bms-last-score";
-let highScore = window.localStorage.getItem(HIGHSCORE_KEY) || 0;
-let lastGameScore = window.localStorage.getItem(LAST_SCORE_KEY) || 0;
-highScoreEl.textContent = `${highScore}s`;
-lastGameScoreEl.textContent = `${lastGameScore}s`;
-
+let highScore = (window.localStorage.getItem(HIGHSCORE_KEY) &&
+  JSON.parse(window.localStorage.getItem(HIGHSCORE_KEY))) || {
+  0: 0,
+  1: 0
+};
+let lastGameScore;
+console.log(highScore);
 const sounds = {
   laser: [
     0,
@@ -62,6 +64,10 @@ const sounds = {
   ]
 };
 
+function updateScoreUi(score) {
+  easyHighScoreEl.textContent = highScore[0] ? `${highScore[0]}s` : "-";
+  hardHighScoreEl.textContent = highScore[1] ? `${highScore[1]}s` : "-";
+}
 function changeScreen(name) {
   screens.forEach(screen => screen.classList.remove("visible"));
   document.querySelector(`[data-screen="${name}"]`).classList.add("visible");
@@ -256,7 +262,7 @@ function setupGame(e, level) {
     el.style.perspectiveOrigin = `${W / 2}px ${H / 2}px`;
   }
   if (e) {
-    level = parseInt(e.target.dataset.level, 10);
+    level = parseInt(e.currentTarget.dataset.level, 10);
     e.stopPropagation();
   }
   currentLevel = level;
@@ -580,12 +586,12 @@ function menuBombBlast(bomb) {
   }
 }
 function saveScores(score) {
-  if (score < highScore) {
-    window.localStorage.setItem(HIGHSCORE_KEY, score);
-    highScore = score;
+  if (score < highScore[currentLevel]) {
+    highScore[currentLevel] = score;
+    window.localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(highScore));
+    updateScoreUi();
   }
   lastGameScore = score;
-  window.localStorage.setItem(LAST_SCORE_KEY, score);
 }
 function tweetScore(score, level) {
   const words = ["Yay!", "Wohoo!", "Yuhoo!", "Check it out!", "Rad!"];
@@ -634,6 +640,7 @@ function init() {
   // menu gameboard
   gen(0, window.menuTileContainer, true);
   gameLoop();
+  updateScoreUi();
 
   window.setupGame = setupGame;
   window.changeScreen = changeScreen;
