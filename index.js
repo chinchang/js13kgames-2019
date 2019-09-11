@@ -70,6 +70,9 @@ function changeScreen(name) {
   // cleanup
   hideMessage();
 
+  window.removeEventListener("keyup", gameStartTriggerHandler);
+  window.removeEventListener("click", gameStartTriggerHandler);
+
   if (name !== "game") {
     grid = [];
     input = [];
@@ -262,17 +265,15 @@ function setupGame(e, level) {
   changeScreen("game");
 
   showMessage("Click/Tap anywhere or press any key to start").then(() => {
-    window.addEventListener(
-      "keyup",
-      () => {
-        // debugger;
-        if (gameState === GAME_STATES.NOT_STARTED) {
-          startGame();
-        }
-      },
-      { once: true }
-    );
+    window.addEventListener("keyup", gameStartTriggerHandler, { once: true });
+    window.addEventListener("click", gameStartTriggerHandler, { once: true });
   });
+}
+
+function gameStartTriggerHandler() {
+  if (gameState === GAME_STATES.NOT_STARTED) {
+    startGame();
+  }
 }
 
 async function startGame() {
@@ -454,9 +455,6 @@ window.onclick = e => {
     return;
   }
   if (currentScreen === "game") {
-    if (gameState === GAME_STATES.NOT_STARTED) {
-      startGame();
-    }
     if (gameState === GAME_STATES.STARTED) {
       tileClickHandler(e);
     }
