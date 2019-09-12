@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="aframe.js"></script>
+    <script src="layout.js"></script>
+    <!-- <script src="https://unpkg.com/aframe-text-geometry-component@^0.5.0/dist/aframe-text-geometry-component.min.js"></script> -->
+    <script>
+      function random(a, b) {
+        return a + ~~(Math.random() * (b - a));
+      }
+
+      const state = {
+        gameState: "notStarted"
+      };
+      function addTile() {
+        let el = document.createElement("div");
+        const isBomb = Math.random() > 0.5;
+        el.innerHTML = `
+          <a-entity tile-listener>
+              <a-box depth="2" width="2" height="2" color="rgb(${random(
+                10,
+                255
+              )}, 78, 45)"
+              animation="property: position.z; from:-3; to: 0; dur: 400; easing: easeInOutSine"
+              animation__rot="property: rotation.z; from:130; to: 0; dur: 400; easing: easeInOutSine"
+              
+              animation__mouseenter="property: scale; to:1.1 1.1; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
+              animation__mouseleave="property: scale; to:1 1; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
+              ></a-box>
+
+              ${
+                isBomb
+                  ? '<a-sphere color="#222" radius="0.7" position="0 0 1"></a-sphere>'
+                  : '<a-text data-id="count" position="-0.35 0 1.08" width="20" value="0"></a-text>'
+              }
+
+          </a-entity>
+          `;
+        el = el.children[0];
+        el.count = 0;
+        document.querySelector("#tileContainer").append(el);
+      }
+      function createGrid() {
+        for (let i = 9; i--; ) {
+          setTimeout(() => {
+            addTile();
+          }, i * 100);
+        }
+      }
+      AFRAME.registerComponent("tile-listener", {
+        init: function() {
+          var el = this.el;
+          el.addEventListener("click", function(evt) {
+            el.querySelector('[data-id="count"]').setAttribute(
+              "value",
+              ++el.count
+            );
+          });
+        }
+      });
+      AFRAME.registerComponent("cursor-listener", {
+        init: function() {
+          var el = this.el;
+          el.addEventListener("click", function(evt) {
+            createGrid();
+          });
+        }
+      });
+    </script>
+    <!-- <script src="https://js13kgames.com/webxr-src/aframe.js"></script> -->
+  </head>
+  <body>
+    <a-scene>
+      <a-assets> </a-assets>
+      <a-entity
+        id="tileContainer"
+        layout="type: box; margin: 2.3; columns:3"
+        position="-2.5 1.5 -7"
+      >
+      </a-entity>
+
+      <a-box
+        position="0 0.87 -3"
+        rotation="-45 0 0"
+        width="1"
+        height="0.4"
+        depth="0.2"
+        color="yellow"
+        cursor-listener
+      ></a-box>
+
+      <a-cylinder
+        position="0 0 -5"
+        radius="5"
+        height="0.5"
+        color="#7BC8A4"
+      ></a-cylinder>
+      <a-sky color="#141142"></a-sky>
+
+      <a-camera>
+        <a-cursor></a-cursor>
+
+        <a-text
+          id="score-element"
+          value="Score"
+          position="-0.35 0.5 -0.8"
+        ></a-text>
+      </a-camera>
+    </a-scene>
+  </body>
+</html>
