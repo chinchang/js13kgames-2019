@@ -9,6 +9,9 @@
       function random(a, b) {
         return a + ~~(Math.random() * (b - a));
       }
+      function randomf(a, b) {
+        return a + Math.random() * (b - a);
+      }
 
       const state = {
         gameState: "notStarted"
@@ -18,22 +21,32 @@
         const isBomb = Math.random() > 0.5;
         const color = `rgb(${random(10, 255)}, 78, 45)`;
 
+        const bomb = `
+        <a-entity position="0 0 1" rotation="0 ${random(0, 360)} 0"
+        >
+            <a-sphere color="#222" metalness="1"  radius="0.7" position="0 0 0"></a-sphere>
+            <a-cylinder color="#222" metalness="1" radius="0.31" height="0.26" position="0 0.7 0"></a-cylinder>
+            <a-torus position="-0.44 0.5 0" color="#fff" arc="90" radius="0.5" radius-tubular="0.03"></a-torus>
+        </a-entity>
+
+        `;
+
         el.innerHTML = `
           <a-entity tile-listener>
-              <a-box depth="2" width="2" height="2" color="${color}"
+              <a-box depth="2" width="2" height="2" color="#8BA069"
               animation="property: position.z; from:-3; to: 0; dur: 400; easing: easeInOutSine"
               animation__rot="property: rotation.z; from:130; to: 0; dur: 400; easing: easeInOutSine"
-              
+
               animation__mouseenter="property: scale; to:1.1 1.1; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
-              animation__mouseenter-color="property: color; to: #000; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
+              animation__mouseenter-color="property: color; to: #fff; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
               animation__mouseleave="property: scale; to:1 1; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
-              animation__mouseleavec-color="property: color; to: ${color}; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
+              animation__mouseleavec-color="property: color; to: #8BA069; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
               ></a-box>
 
               ${
                 isBomb
-                  ? '<a-sphere color="#222" radius="0.7" position="0 0 1"></a-sphere>'
-                  : '<a-text data-id="count" position="-0.35 0 1.08" width="20" value="0"></a-text>'
+                  ? bomb
+                  : '<a-text data-id="count" color="#000" position="-0.35 0 1.08" width="20" value="0"></a-text>'
               }
 
           </a-entity>
@@ -49,10 +62,28 @@
           }, i * 100);
         }
       }
+      function blast(position) {
+        console.log(position);
+        const scene = document.querySelector("a-scene");
+        for (let i = random(5, 10); i--; ) {
+          let el = document.createElement("div");
+          let radius = Math.random() * 0.1;
+          el.innerHTML = `
+          <a-sphere radius="${radius}" color="yellow" position="${position.x +
+            Math.random() * 0.1} ${position.y +
+            Math.random() * 0.1} ${position.z +
+            Math.random() * 0.1}" blast-particle></a-sphere>
+          `;
+          el = el.children[0];
+          scene.append(el);
+        }
+      }
       AFRAME.registerComponent("tile-listener", {
         init: function() {
           var el = this.el;
           el.addEventListener("click", function(evt) {
+            // console.log(el.getAttribute("position"), 9, el.object3D.position);
+            blast(el.object3D.getWorldPosition());
             el.querySelector('[data-id="count"]').setAttribute(
               "value",
               ++el.count
@@ -60,6 +91,58 @@
           });
         }
       });
+      AFRAME.registerComponent("blast-particle", {
+        init: function() {
+          var el = this.el;
+
+          const pos = document
+            .querySelector("a-camera")
+            .object3D.getWorldPosition();
+
+          this.targetPosition = new THREE.Vector3(
+            pos.x + randomf(-2, 2),
+            pos.y + randomf(-2, 2),
+            pos.z
+          );
+          this.directionVec3 = new THREE.Vector3();
+          this.speed = 10;
+        },
+        tick: function(time, timeDelta) {
+          var directionVec3 = this.directionVec3;
+
+          // Grab position vectors (THREE.Vector3) from the entities' three.js objects.
+          var targetPosition = this.targetPosition;
+          var currentPosition = this.el.object3D.position;
+
+          // Subtract the vectors to get the direction the entity should head in.
+          directionVec3.copy(targetPosition).sub(currentPosition);
+
+          // Calculate the distance.
+          var distance = directionVec3.length();
+
+          // Don't go any closer if a close proximity has been reached.
+          if (distance < 0.1) {
+            this.el.remove();
+            return;
+          }
+
+          // Scale the direction vector's magnitude down to match the speed.
+          var factor = this.speed / distance;
+          ["x", "y", "z"].forEach(function(axis) {
+            directionVec3[axis] *= factor * (timeDelta / 1000);
+          });
+
+          // console.log(directionVec3);
+
+          // Translate the entity in the direction towards the target.
+          this.el.setAttribute("position", {
+            x: currentPosition.x + directionVec3.x,
+            y: currentPosition.y + directionVec3.y,
+            z: currentPosition.z + directionVec3.z
+          });
+        }
+      });
+
       AFRAME.registerComponent("cursor-listener", {
         init: function() {
           var el = this.el;
@@ -84,12 +167,18 @@
       <a-box
         position="0 0.87 -3"
         rotation="-45 0 0"
-        width="1"
+        width="1.4"
         height="0.4"
         depth="0.2"
         color="yellow"
         cursor-listener
-      ></a-box>
+      >
+        <a-text
+          value="Start game"
+          position="-0.56 0 0.12"
+          color="black"
+        ></a-text>
+      </a-box>
 
       <a-cylinder
         position="0 0 -5"
