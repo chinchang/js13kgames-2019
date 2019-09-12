@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "parcel index.html",
+    "start2": "parcel game2/index.html --https",
     "build": "rm -rf dist && parcel build index.html --no-source-maps && mv dist public",
     "check-file-size": "node ./scripts/check-file-size.js",
     "inline-build": "html-inline -i ./public/index.html -o ./public/index2.html && mv ./public/index2.html ./public/index.html",

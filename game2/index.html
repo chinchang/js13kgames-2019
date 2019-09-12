@@ -16,17 +16,18 @@
       function addTile() {
         let el = document.createElement("div");
         const isBomb = Math.random() > 0.5;
+        const color = `rgb(${random(10, 255)}, 78, 45)`;
+
         el.innerHTML = `
           <a-entity tile-listener>
-              <a-box depth="2" width="2" height="2" color="rgb(${random(
-                10,
-                255
-              )}, 78, 45)"
+              <a-box depth="2" width="2" height="2" color="${color}"
               animation="property: position.z; from:-3; to: 0; dur: 400; easing: easeInOutSine"
               animation__rot="property: rotation.z; from:130; to: 0; dur: 400; easing: easeInOutSine"
               
               animation__mouseenter="property: scale; to:1.1 1.1; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
+              animation__mouseenter-color="property: color; to: #000; startEvents: mouseenter; dur: 300; easing: easeInOutSine";
               animation__mouseleave="property: scale; to:1 1; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
+              animation__mouseleavec-color="property: color; to: ${color}; startEvents: mouseleave; dur: 300; easing: easeInOutSine";
               ></a-box>
 
               ${
@@ -76,7 +77,7 @@
       <a-entity
         id="tileContainer"
         layout="type: box; margin: 2.3; columns:3"
-        position="-2.5 1.5 -7"
+        position="-2.5 1.5 -10"
       >
       </a-entity>
 
@@ -92,7 +93,7 @@
 
       <a-cylinder
         position="0 0 -5"
-        radius="5"
+        radius="15"
         height="0.5"
         color="#7BC8A4"
       ></a-cylinder>
@@ -101,11 +102,11 @@
       <a-camera>
         <a-cursor></a-cursor>
 
-        <a-text
+        <!-- <a-text
           id="score-element"
           value="Score"
           position="-0.35 0.5 -0.8"
-        ></a-text>
+        ></a-text> -->
       </a-camera>
     </a-scene>
   </body>
