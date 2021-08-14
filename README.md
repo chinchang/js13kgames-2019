@@ -1,6 +1,6 @@
 # REPEEWSENIM
 
-This is my game entry for the js13kGames compo 2019.
+This is my game entry for the js13kGames compo 2019 - https://js13kgames.com/games/repeewsenim/index.html
 
 ## Gameplay
 
